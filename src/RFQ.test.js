@@ -40,11 +40,11 @@ describe('RFQ', () => {
 
     test('should throw error for invalid amount', () => {
       expect(() => new RFQ('rfq1', 'BTC/USD', 'buy', 0, futureTime))
-        .toThrow('Amount must be a positive number');
+        .toThrow('Amount must be a positive finite number');
       expect(() => new RFQ('rfq1', 'BTC/USD', 'buy', -10, futureTime))
-        .toThrow('Amount must be a positive number');
+        .toThrow('Amount must be a positive finite number');
       expect(() => new RFQ('rfq1', 'BTC/USD', 'buy', '100', futureTime))
-        .toThrow('Amount must be a positive number');
+        .toThrow('Amount must be a positive finite number');
     });
 
     test('should throw error for past expiration', () => {
@@ -59,6 +59,38 @@ describe('RFQ', () => {
       
       const sellRfq = new RFQ('rfq2', 'BTC/USD', 'sell', 100, futureTime);
       expect(sellRfq.direction).toBe('sell');
+    });
+
+    test('should throw error for Infinity amount', () => {
+      expect(() => new RFQ('rfq1', 'BTC/USD', 'buy', Infinity, futureTime))
+        .toThrow('Amount must be a positive finite number');
+    });
+
+    test('should throw error for NaN amount', () => {
+      expect(() => new RFQ('rfq1', 'BTC/USD', 'buy', NaN, futureTime))
+        .toThrow('Amount must be a positive finite number');
+    });
+
+    test('should throw error for whitespace-only market', () => {
+      expect(() => new RFQ('rfq1', '   ', 'buy', 100, futureTime))
+        .toThrow('Market must be a non-empty string');
+      expect(() => new RFQ('rfq1', '\t\n', 'buy', 100, futureTime))
+        .toThrow('Market must be a non-empty string');
+    });
+
+    test('should throw error for Infinity expiration', () => {
+      expect(() => new RFQ('rfq1', 'BTC/USD', 'buy', 100, Infinity))
+        .toThrow('Expiration must be a future timestamp');
+    });
+
+    test('should accept decimal amounts', () => {
+      const rfq = new RFQ('rfq1', 'BTC/USD', 'buy', 0.0001, futureTime);
+      expect(rfq.amount).toBe(0.0001);
+    });
+
+    test('should accept very small positive amounts', () => {
+      const rfq = new RFQ('rfq1', 'BTC/USD', 'buy', 0.00000001, futureTime);
+      expect(rfq.amount).toBe(0.00000001);
     });
   });
 

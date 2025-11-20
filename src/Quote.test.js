@@ -35,16 +35,36 @@ describe('Quote', () => {
 
     test('should throw error for invalid pricePerToken', () => {
       expect(() => new Quote('quote1', 'rfq1', 'maker1', 0))
-        .toThrow('Price per token must be a positive number');
+        .toThrow('Price per token must be a positive finite number');
       expect(() => new Quote('quote1', 'rfq1', 'maker1', -100))
-        .toThrow('Price per token must be a positive number');
+        .toThrow('Price per token must be a positive finite number');
       expect(() => new Quote('quote1', 'rfq1', 'maker1', '50000'))
-        .toThrow('Price per token must be a positive number');
+        .toThrow('Price per token must be a positive finite number');
     });
 
     test('should accept decimal prices', () => {
       const quote = new Quote('quote1', 'rfq1', 'maker1', 50000.5);
       expect(quote.pricePerToken).toBe(50000.5);
+    });
+
+    test('should throw error for Infinity price', () => {
+      expect(() => new Quote('quote1', 'rfq1', 'maker1', Infinity))
+        .toThrow('Price per token must be a positive finite number');
+    });
+
+    test('should throw error for NaN price', () => {
+      expect(() => new Quote('quote1', 'rfq1', 'maker1', NaN))
+        .toThrow('Price per token must be a positive finite number');
+    });
+
+    test('should throw error for whitespace-only rfqId', () => {
+      expect(() => new Quote('quote1', '   ', 'maker1', 50000))
+        .toThrow('RFQ id must be a non-empty string');
+    });
+
+    test('should throw error for whitespace-only makerId', () => {
+      expect(() => new Quote('quote1', 'rfq1', '   ', 50000))
+        .toThrow('Maker id must be a non-empty string');
     });
   });
 

@@ -28,16 +28,16 @@ class Quote {
       throw new Error('Quote id must be a non-empty string');
     }
 
-    if (!rfqId || typeof rfqId !== 'string') {
+    if (!rfqId || typeof rfqId !== 'string' || rfqId.trim().length === 0) {
       throw new Error('RFQ id must be a non-empty string');
     }
 
-    if (!makerId || typeof makerId !== 'string') {
+    if (!makerId || typeof makerId !== 'string' || makerId.trim().length === 0) {
       throw new Error('Maker id must be a non-empty string');
     }
 
-    if (typeof pricePerToken !== 'number' || pricePerToken <= 0) {
-      throw new Error('Price per token must be a positive number');
+    if (typeof pricePerToken !== 'number' || pricePerToken <= 0 || !Number.isFinite(pricePerToken)) {
+      throw new Error('Price per token must be a positive finite number');
     }
   }
 

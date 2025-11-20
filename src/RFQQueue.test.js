@@ -105,6 +105,20 @@ describe('RFQQueue', () => {
         .toThrow('Cannot add quote to RFQ with status: filled');
     });
 
+    test('should give clear error when RFQ is expired', async () => {
+      const shortFuture = Date.now() + 10;
+      const rfq = new RFQ('rfq1', 'BTC/USD', 'buy', 100, shortFuture);
+      queue.addRFQ(rfq);
+      
+      // Wait for expiration
+      await new Promise(resolve => setTimeout(resolve, 20));
+      
+      const quote = new Quote('quote1', 'rfq1', 'maker1', 50000);
+      
+      expect(() => queue.addQuote(quote))
+        .toThrow('Cannot add quote to expired RFQ (id: rfq1)');
+    });
+
     test('should throw error for duplicate quote id', () => {
       const rfq = new RFQ('rfq1', 'BTC/USD', 'buy', 100, futureTime);
       queue.addRFQ(rfq);

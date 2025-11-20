@@ -32,7 +32,7 @@ class RFQ {
       throw new Error('RFQ id must be a non-empty string');
     }
 
-    if (!market || typeof market !== 'string') {
+    if (!market || typeof market !== 'string' || market.trim().length === 0) {
       throw new Error('Market must be a non-empty string');
     }
 
@@ -40,11 +40,11 @@ class RFQ {
       throw new Error('Direction must be either "buy" or "sell"');
     }
 
-    if (typeof amount !== 'number' || amount <= 0) {
-      throw new Error('Amount must be a positive number');
+    if (typeof amount !== 'number' || amount <= 0 || !Number.isFinite(amount)) {
+      throw new Error('Amount must be a positive finite number');
     }
 
-    if (typeof expiration !== 'number' || expiration <= Date.now()) {
+    if (typeof expiration !== 'number' || !Number.isFinite(expiration) || expiration <= Date.now()) {
       throw new Error('Expiration must be a future timestamp');
     }
   }

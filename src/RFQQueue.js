@@ -64,6 +64,9 @@ class RFQQueue {
 
     // Check if RFQ is open
     if (!rfq.isOpen()) {
+      if (rfq.isExpired() && rfq.status === 'open') {
+        throw new Error(`Cannot add quote to expired RFQ (id: ${rfq.id})`);
+      }
       throw new Error(`Cannot add quote to RFQ with status: ${rfq.status}`);
     }
 

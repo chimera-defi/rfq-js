@@ -47,7 +47,7 @@ describe('RFQManager', () => {
         .toThrow('Direction must be either "buy" or "sell"');
       
       expect(() => manager.createRFQ('BTC/USD', 'buy', -10, 60000))
-        .toThrow('Amount must be a positive number');
+        .toThrow('Amount must be a positive finite number');
     });
 
     test('should retrieve created RFQ', () => {
@@ -103,7 +103,7 @@ describe('RFQManager', () => {
         .toThrow('Maker id must be a non-empty string');
       
       expect(() => manager.submitQuote(rfq.id, 'maker1', 0))
-        .toThrow('Price per token must be a positive number');
+        .toThrow('Price per token must be a positive finite number');
     });
   });
 
