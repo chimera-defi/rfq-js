@@ -78,6 +78,41 @@ export interface ISelectQuoteResult {
 }
 
 /**
+ * System event types
+ */
+export type EventType = 
+  | 'rfq_created'
+  | 'quote_added'
+  | 'quote_accepted'
+  | 'rfq_expired'
+  | 'rfq_cancelled'
+  | 'rfq_filled';
+
+/**
+ * System event for audit trail
+ */
+export interface ISystemEvent {
+  eventId: string;
+  eventType: EventType;
+  timestamp: number;
+  rfqId: string;
+  quoteId?: string;
+  makerId?: string;
+  data?: any;
+}
+
+/**
+ * Filters for querying system events
+ */
+export interface IEventFilters {
+  rfqId?: string;
+  eventType?: EventType;
+  startTime?: number;
+  endTime?: number;
+  makerId?: string;
+}
+
+/**
  * RFQ interface (class methods)
  */
 export interface IRFQ {

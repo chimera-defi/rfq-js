@@ -1,7 +1,8 @@
 import { RFQ } from './RFQ';
 import { Quote } from './Quote';
 import { RFQQueue } from './RFQQueue';
-import { IRFQ, IQuote, IRFQDetails, IRFQStats, ISelectQuoteResult, Direction, IAutoAcceptConfig } from './types';
+import { EventLog } from './EventLog';
+import { IRFQ, IQuote, IRFQDetails, IRFQStats, ISelectQuoteResult, Direction, IAutoAcceptConfig, ISystemEvent, IEventFilters } from './types';
 
 /**
  * RFQManager Class
@@ -9,10 +10,12 @@ import { IRFQ, IQuote, IRFQDetails, IRFQStats, ISelectQuoteResult, Direction, IA
  */
 export class RFQManager {
   private queue: RFQQueue;
+  private eventLog: EventLog;
   private idCounter: number;
 
   constructor() {
     this.queue = new RFQQueue();
+    this.eventLog = new EventLog();
     this.idCounter = 0;
   }
 
@@ -48,6 +51,14 @@ export class RFQManager {
     const rfq = new RFQ(id, market, direction, amount, expiration, autoAccept);
     this.queue.addRFQ(rfq);
     
+    // Log event
+    this.eventLog.logEvent('rfq_created', rfq.id, undefined, undefined, {
+      market,
+      direction,
+      amount,
+      expiration
+    });
+    
     // Automatically expire old RFQs when creating new ones
     this.expireOldRFQs();
     
@@ -73,6 +84,11 @@ export class RFQManager {
     const quote = new Quote(id, rfqId, makerId, pricePerToken);
     
     this.queue.addQuote(quote);
+    
+    // Log event
+    this.eventLog.logEvent('quote_added', rfqId, quote.id, makerId, {
+      pricePerToken
+    });
     
     // Check if auto-accept should trigger
     this.checkAndAutoAccept(rfqId);
@@ -105,7 +121,16 @@ export class RFQManager {
     }
     
     // Auto-accept the best quote
-    return this.queue.selectQuote(rfqId, bestQuote.id);
+    const result = this.queue.selectQuote(rfqId, bestQuote.id);
+    
+    // Log events
+    this.eventLog.logEvent('quote_accepted', rfqId, bestQuote.id, bestQuote.makerId, {
+      pricePerToken: bestQuote.pricePerToken,
+      autoAccept: true
+    });
+    this.eventLog.logEvent('rfq_filled', rfqId, bestQuote.id, bestQuote.makerId);
+    
+    return result;
   }
 
   /**
@@ -143,6 +168,14 @@ export class RFQManager {
     this.expireOldRFQs();
     
     const result = this.queue.selectQuote(rfqId, quoteId);
+    
+    // Log events
+    this.eventLog.logEvent('quote_accepted', rfqId, quoteId, result.quote.makerId, {
+      pricePerToken: result.quote.pricePerToken,
+      autoAccept: false
+    });
+    this.eventLog.logEvent('rfq_filled', rfqId, quoteId, result.quote.makerId);
+    
     return result;
   }
 
@@ -198,7 +231,14 @@ export class RFQManager {
    * @returns Array of expired RFQs
    */
   public expireOldRFQs(): IRFQ[] {
-    return this.queue.expireRFQs();
+    const expired = this.queue.expireRFQs();
+    
+    // Log expiration events
+    for (const rfq of expired) {
+      this.eventLog.logEvent('rfq_expired', rfq.id);
+    }
+    
+    return expired;
   }
 
   /**
@@ -210,10 +250,66 @@ export class RFQManager {
   }
 
   /**
+   * Cancel an RFQ
+   * @param rfqId - The RFQ ID to cancel
+   * @returns The cancelled RFQ
+   */
+  public cancelRFQ(rfqId: string): IRFQ {
+    const rfq = this.queue.getRFQ(rfqId);
+    if (!rfq) {
+      throw new Error(`RFQ not found: ${rfqId}`);
+    }
+    
+    rfq.cancel();
+    
+    // Log event
+    this.eventLog.logEvent('rfq_cancelled', rfqId);
+    
+    return rfq;
+  }
+
+  /**
+   * Get all system events with optional filters
+   * @param filters - Optional filters
+   * @returns Filtered events
+   */
+  public getEvents(filters?: IEventFilters): ISystemEvent[] {
+    return this.eventLog.getEvents(filters);
+  }
+
+  /**
+   * Get events for a specific RFQ
+   * @param rfqId - RFQ ID
+   * @returns Events for the RFQ
+   */
+  public getEventsForRFQ(rfqId: string): ISystemEvent[] {
+    return this.eventLog.getEventsForRFQ(rfqId);
+  }
+
+  /**
+   * Get recent system events
+   * @param limit - Maximum number of events to return
+   * @returns Recent events
+   */
+  public getRecentEvents(limit: number = 100): ISystemEvent[] {
+    return this.eventLog.getRecentEvents(limit);
+  }
+
+  /**
+   * Get event statistics
+   * @returns Event counts by type
+   */
+  public getEventStats(): Map<string, number> {
+    const counts = this.eventLog.getEventCountsByType();
+    return new Map(Array.from(counts.entries()).map(([k, v]) => [k as string, v]));
+  }
+
+  /**
    * Clear all data (useful for testing)
    */
   public clear(): void {
     this.queue.clear();
+    this.eventLog.clear();
     this.idCounter = 0;
   }
 }

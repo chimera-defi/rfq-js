@@ -4,7 +4,7 @@
  * This example demonstrates how to use the RFQ system
  */
 
-const { RFQManager } = require('./src/index');
+const { RFQManager } = require('./dist/index');
 
 // Create a new RFQ manager
 const manager = new RFQManager();

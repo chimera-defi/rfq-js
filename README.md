@@ -1,6 +1,6 @@
-# RFQ System (JavaScript)
+# RFQ System (TypeScript)
 
-A simple, in-memory Request for Quote (RFQ) system built in JavaScript. This learning project demonstrates how trading systems handle quote requests, market maker responses, and order fills.
+A simple, in-memory Request for Quote (RFQ) system built with TypeScript. This learning project demonstrates how trading systems handle quote requests, market maker responses, and order fills.
 
 ## 🎯 Overview
 
@@ -14,6 +14,11 @@ The RFQ system allows:
 ### Two Workflow Options:
 1. **3-Step Process** (Manual) - Create RFQ → Receive Quotes → Manually Select Best
 2. **2-Step Process** (Auto-Accept) ⭐ - Create RFQ with auto-accept → Automatically filled ⚡
+
+### Event Logging:
+- ✅ Full audit trail of all system events
+- ✅ Query events by RFQ, type, maker, or time range
+- ✅ Recent activity tracking
 
 ## 📦 Installation
 
@@ -39,7 +44,7 @@ npm run test:coverage
 ### 3-Step Example (Manual Selection)
 
 ```javascript
-const { RFQManager } = require('./src/index');
+const { RFQManager } = require('./dist/index');
 
 // Create RFQ manager
 const manager = new RFQManager();
@@ -76,10 +81,17 @@ console.log(rfq.status); // "filled"
 console.log(`Auto-filled at $${rfq.selectedQuoteId}`);
 ```
 
-### Run the Example
+### Run the Examples
 
 ```bash
+# Build TypeScript first
+npm run build
+
+# Run basic example
 node example.js
+
+# Run 2-step vs 3-step comparison
+node example-2step.js
 ```
 
 ## 📚 Core Components
@@ -110,68 +122,102 @@ Manages in-memory storage of RFQs and quotes:
 High-level orchestrator that:
 - Creates and validates RFQs
 - Handles quote submissions
-- Manages quote acceptance
+- Manages quote acceptance (manual or auto)
 - Auto-expires old RFQs
 - Provides system statistics
+- Tracks all events for audit trail
+
+### EventLog
+Comprehensive event tracking system:
+- Logs all system operations
+- Provides audit trail
+- Enables activity monitoring
+- Supports filtering and querying
 
 ## 🎓 Key Features
 
-- ✅ **Two workflows** - 3-step (manual) or 2-step (auto-accept) ⭐ NEW
+- ✅ **Two workflows** - 3-step (manual) or 2-step (auto-accept) ⭐
+- ✅ **Event logging** - Full audit trail of all operations ⭐
 - ✅ **Full validation** - Input validation at all levels
 - ✅ **Expiration handling** - Automatic RFQ expiration
 - ✅ **Multiple quotes** - Multiple makers can quote same RFQ
 - ✅ **Buy/Sell support** - Handles both directions
 - ✅ **Status tracking** - Open, filled, expired, cancelled
 - ✅ **TypeScript** - Full type safety with strict mode
-- ✅ **Comprehensive tests** - 117 tests with 95%+ coverage
+- ✅ **Comprehensive tests** - 136 tests with 95%+ coverage
 
 ## 📖 Documentation
 
-See [DESIGN.md](./DESIGN.md) for detailed architecture and design decisions.
+- **[DESIGN.md](./DESIGN.md)** - System architecture and design decisions
+- **[ACTOR_MODEL.md](./ACTOR_MODEL.md)** - Taker/Maker workflows and patterns
+- **[TWO_STEP_FEATURE.md](./TWO_STEP_FEATURE.md)** - Auto-accept feature guide
+- **[CODE_REVIEW.md](./CODE_REVIEW.md)** - Comprehensive code review
+- **[TYPESCRIPT_MIGRATION.md](./TYPESCRIPT_MIGRATION.md)** - TypeScript migration guide
+- **[PR_COMPARISON.md](./PR_COMPARISON.md)** - Comparison with other implementations
 
 ## 🏗️ Project Structure
 
 ```
 .
 ├── src/
-│   ├── RFQ.js              # RFQ model
-│   ├── RFQ.test.js         # RFQ tests
-│   ├── Quote.js            # Quote model
-│   ├── Quote.test.js       # Quote tests
-│   ├── RFQQueue.js         # Queue manager
-│   ├── RFQQueue.test.js    # Queue tests
-│   ├── RFQManager.js       # Main orchestrator
-│   ├── RFQManager.test.js  # Manager tests
-│   ├── integration.test.js # E2E tests
-│   └── index.js            # Main entry point
-├── DESIGN.md               # Architecture documentation
-├── example.js              # Usage examples
+│   ├── RFQ.ts              # RFQ model with validation
+│   ├── Quote.ts            # Quote model with validation
+│   ├── RFQQueue.ts         # Storage and relationships
+│   ├── RFQManager.ts       # Main orchestrator
+│   ├── EventLog.ts         # Event tracking system ⭐
+│   ├── types.ts            # TypeScript type definitions
+│   ├── index.ts            # Main entry point
+│   └── __tests__/          # All test files
+│       ├── RFQ.test.ts
+│       ├── Quote.test.ts
+│       ├── RFQQueue.test.ts
+│       ├── RFQManager.test.ts
+│       ├── EventLog.test.ts      ⭐
+│       ├── integration.test.ts
+│       └── autoAccept.test.ts    ⭐
+├── dist/                   # Compiled JavaScript output
+├── docs/
+│   ├── DESIGN.md           # Architecture
+│   ├── ACTOR_MODEL.md      # Workflows ⭐
+│   ├── CODE_REVIEW.md      # Code review ⭐
+│   └── ...
+├── example.js              # Basic usage example
+├── example-2step.js        # 2-step vs 3-step comparison ⭐
 ├── package.json
-├── jest.config.js
+├── tsconfig.json           # TypeScript configuration
+├── jest.config.js          # Jest configuration
 └── README.md
 ```
 
 ## 🧠 Learning Points
 
 This project demonstrates:
-1. **Object-oriented design** - Classes with clear responsibilities
-2. **Data validation** - Input validation and error handling
-3. **State management** - RFQ lifecycle and status transitions
-4. **Testing strategies** - Unit, integration, and E2E tests
-5. **In-memory storage** - Using Maps and Sets effectively
-6. **Business logic** - Trading workflow implementation
+1. **TypeScript** - Strict typing, interfaces, enums, generics
+2. **Object-oriented design** - Classes with clear responsibilities
+3. **Data validation** - Input validation and error handling
+4. **State management** - RFQ lifecycle and status transitions
+5. **Testing strategies** - Unit, integration, and E2E tests (136 tests!)
+6. **In-memory storage** - Using Maps and Sets effectively
+7. **Business logic** - Trading workflow implementation
+8. **Event sourcing** - Audit trail and activity tracking
+9. **Actor model** - Taker/Maker pattern
+10. **Flexible workflows** - 3-step manual and 2-step auto-accept
 
 ## 🔮 Future Enhancements
+
+See [CODE_REVIEW.md](./CODE_REVIEW.md) for detailed production recommendations.
 
 Potential additions for learning:
 - Persistent storage (database integration)
 - WebSocket for real-time updates
 - Authentication and authorization
-- Partial fills
-- Quote amendments
-- Order matching algorithms
-- REST API layer
-- Web UI
+- REST API layer (Express/Fastify)
+- GraphQL API
+- Web UI (React/Vue)
+- Partial fills support
+- Quote cancellation
+- Price limits on RFQs
+- Event log retention policies
 
 ## 📝 License
 
