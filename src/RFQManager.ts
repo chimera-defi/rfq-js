@@ -1,12 +1,16 @@
-const RFQ = require('./RFQ');
-const Quote = require('./Quote');
-const RFQQueue = require('./RFQQueue');
+import { RFQ } from './RFQ';
+import { Quote } from './Quote';
+import { RFQQueue } from './RFQQueue';
+import { IRFQ, IQuote, IRFQDetails, IRFQStats, ISelectQuoteResult, Direction } from './types';
 
 /**
  * RFQManager Class
  * High-level orchestrator for the RFQ system
  */
-class RFQManager {
+export class RFQManager {
+  private queue: RFQQueue;
+  private idCounter: number;
+
   constructor() {
     this.queue = new RFQQueue();
     this.idCounter = 0;
@@ -14,23 +18,28 @@ class RFQManager {
 
   /**
    * Generate a unique ID
-   * @param {string} prefix - Prefix for the ID
-   * @returns {string} Unique ID
+   * @param prefix - Prefix for the ID
+   * @returns Unique ID
    */
-  generateId(prefix = 'id') {
+  private generateId(prefix: string = 'id'): string {
     this.idCounter++;
     return `${prefix}_${this.idCounter}_${Date.now()}`;
   }
 
   /**
    * Create and submit a new RFQ
-   * @param {string} market - Trading pair (e.g., "BTC/USD")
-   * @param {string} direction - "buy" or "sell"
-   * @param {number} amount - Quantity to trade
-   * @param {number} expirationMs - Time in milliseconds until expiration
-   * @returns {RFQ} The created RFQ
+   * @param market - Trading pair (e.g., "BTC/USD")
+   * @param direction - "buy" or "sell"
+   * @param amount - Quantity to trade
+   * @param expirationMs - Time in milliseconds until expiration
+   * @returns The created RFQ
    */
-  createRFQ(market, direction, amount, expirationMs) {
+  public createRFQ(
+    market: string,
+    direction: Direction,
+    amount: number,
+    expirationMs: number
+  ): IRFQ {
     const id = this.generateId('rfq');
     const expiration = Date.now() + expirationMs;
     
@@ -45,12 +54,16 @@ class RFQManager {
 
   /**
    * Submit a quote for an RFQ
-   * @param {string} rfqId - The RFQ ID to quote on
-   * @param {string} makerId - Identifier for the maker
-   * @param {number} pricePerToken - Price offered
-   * @returns {Quote} The created quote
+   * @param rfqId - The RFQ ID to quote on
+   * @param makerId - Identifier for the maker
+   * @param pricePerToken - Price offered
+   * @returns The created quote
    */
-  submitQuote(rfqId, makerId, pricePerToken) {
+  public submitQuote(
+    rfqId: string,
+    makerId: string,
+    pricePerToken: number
+  ): IQuote {
     // First expire old RFQs
     this.expireOldRFQs();
     
@@ -63,11 +76,11 @@ class RFQManager {
 
   /**
    * Accept a specific quote for an RFQ
-   * @param {string} rfqId - The RFQ ID
-   * @param {string} quoteId - The quote ID to accept
-   * @returns {Object} Object with filled RFQ and accepted quote
+   * @param rfqId - The RFQ ID
+   * @param quoteId - The quote ID to accept
+   * @returns Object with filled RFQ and accepted quote
    */
-  acceptQuote(rfqId, quoteId) {
+  public acceptQuote(rfqId: string, quoteId: string): ISelectQuoteResult {
     // First expire old RFQs
     this.expireOldRFQs();
     
@@ -77,10 +90,10 @@ class RFQManager {
 
   /**
    * Get details of an RFQ including all its quotes
-   * @param {string} rfqId - The RFQ ID
-   * @returns {Object|null} Object with RFQ and its quotes, or null if not found
+   * @param rfqId - The RFQ ID
+   * @returns Object with RFQ and its quotes, or null if not found
    */
-  getRFQDetails(rfqId) {
+  public getRFQDetails(rfqId: string): IRFQDetails | null {
     const rfq = this.queue.getRFQ(rfqId);
     if (!rfq) {
       return null;
@@ -96,9 +109,9 @@ class RFQManager {
 
   /**
    * Get all RFQs with their quotes
-   * @returns {Array<Object>} Array of RFQ details
+   * @returns Array of RFQ details
    */
-  getAllRFQDetails() {
+  public getAllRFQDetails(): IRFQDetails[] {
     const rfqs = this.queue.getAllRFQs();
     return rfqs.map(rfq => ({
       rfq: rfq.toJSON(),
@@ -108,9 +121,9 @@ class RFQManager {
 
   /**
    * Get all open RFQs (not expired, not filled, not cancelled)
-   * @returns {Array<Object>} Array of open RFQ details
+   * @returns Array of open RFQ details
    */
-  getOpenRFQs() {
+  public getOpenRFQs(): IRFQDetails[] {
     this.expireOldRFQs();
     
     const rfqs = this.queue.getAllRFQs();
@@ -124,27 +137,25 @@ class RFQManager {
 
   /**
    * Expire all RFQs that have passed their expiration time
-   * @returns {Array<RFQ>} Array of expired RFQs
+   * @returns Array of expired RFQs
    */
-  expireOldRFQs() {
+  public expireOldRFQs(): IRFQ[] {
     return this.queue.expireRFQs();
   }
 
   /**
    * Get system statistics
-   * @returns {Object} Statistics object
+   * @returns Statistics object
    */
-  getStats() {
+  public getStats(): IRFQStats {
     return this.queue.getStats();
   }
 
   /**
    * Clear all data (useful for testing)
    */
-  clear() {
+  public clear(): void {
     this.queue.clear();
     this.idCounter = 0;
   }
 }
-
-module.exports = RFQManager;

@@ -1,4 +1,4 @@
-const RFQ = require('./RFQ');
+import { RFQ } from '../RFQ';
 
 describe('RFQ', () => {
   const futureTime = Date.now() + 60000; // 1 minute from now
@@ -20,21 +20,21 @@ describe('RFQ', () => {
     test('should throw error for invalid id', () => {
       expect(() => new RFQ('', 'BTC/USD', 'buy', 100, futureTime))
         .toThrow('RFQ id must be a non-empty string');
-      expect(() => new RFQ(null, 'BTC/USD', 'buy', 100, futureTime))
+      expect(() => new RFQ(null as any, 'BTC/USD', 'buy', 100, futureTime))
         .toThrow('RFQ id must be a non-empty string');
     });
 
     test('should throw error for invalid market', () => {
       expect(() => new RFQ('rfq1', '', 'buy', 100, futureTime))
         .toThrow('Market must be a non-empty string');
-      expect(() => new RFQ('rfq1', null, 'buy', 100, futureTime))
+      expect(() => new RFQ('rfq1', null as any, 'buy', 100, futureTime))
         .toThrow('Market must be a non-empty string');
     });
 
     test('should throw error for invalid direction', () => {
-      expect(() => new RFQ('rfq1', 'BTC/USD', 'hold', 100, futureTime))
+      expect(() => new RFQ('rfq1', 'BTC/USD', 'hold' as any, 100, futureTime))
         .toThrow('Direction must be either "buy" or "sell"');
-      expect(() => new RFQ('rfq1', 'BTC/USD', 'BUY', 100, futureTime))
+      expect(() => new RFQ('rfq1', 'BTC/USD', 'BUY' as any, 100, futureTime))
         .toThrow('Direction must be either "buy" or "sell"');
     });
 
@@ -43,7 +43,7 @@ describe('RFQ', () => {
         .toThrow('Amount must be a positive finite number');
       expect(() => new RFQ('rfq1', 'BTC/USD', 'buy', -10, futureTime))
         .toThrow('Amount must be a positive finite number');
-      expect(() => new RFQ('rfq1', 'BTC/USD', 'buy', '100', futureTime))
+      expect(() => new RFQ('rfq1', 'BTC/USD', 'buy', '100' as any, futureTime))
         .toThrow('Amount must be a positive finite number');
     });
 

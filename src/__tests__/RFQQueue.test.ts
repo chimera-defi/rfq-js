@@ -1,9 +1,9 @@
-const RFQ = require('./RFQ');
-const Quote = require('./Quote');
-const RFQQueue = require('./RFQQueue');
+import { RFQ } from '../RFQ';
+import { Quote } from '../Quote';
+import { RFQQueue } from '../RFQQueue';
 
 describe('RFQQueue', () => {
-  let queue;
+  let queue: RFQQueue;
   const futureTime = Date.now() + 60000;
 
   beforeEach(() => {
@@ -20,9 +20,9 @@ describe('RFQQueue', () => {
     });
 
     test('should throw error for invalid RFQ', () => {
-      expect(() => queue.addRFQ(null))
+      expect(() => queue.addRFQ(null as any))
         .toThrow('Invalid RFQ object');
-      expect(() => queue.addRFQ({}))
+      expect(() => queue.addRFQ({} as any))
         .toThrow('Invalid RFQ object');
     });
 
@@ -81,9 +81,9 @@ describe('RFQQueue', () => {
     });
 
     test('should throw error for invalid quote', () => {
-      expect(() => queue.addQuote(null))
+      expect(() => queue.addQuote(null as any))
         .toThrow('Invalid Quote object');
-      expect(() => queue.addQuote({}))
+      expect(() => queue.addQuote({} as any))
         .toThrow('Invalid Quote object');
     });
 

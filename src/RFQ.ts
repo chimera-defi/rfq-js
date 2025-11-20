@@ -1,17 +1,34 @@
+import { IRFQ, IRFQData, Direction, RFQStatus } from './types';
+
 /**
  * RFQ (Request for Quote) Class
  * Represents a request from a taker to get price quotes from makers
  */
-class RFQ {
+export class RFQ implements IRFQ {
+  public readonly id: string;
+  public readonly market: string;
+  public readonly direction: Direction;
+  public readonly amount: number;
+  public readonly expiration: number;
+  public status: RFQStatus;
+  public readonly createdAt: number;
+  public selectedQuoteId: string | null;
+
   /**
    * Create an RFQ
-   * @param {string} id - Unique identifier
-   * @param {string} market - Trading pair (e.g., "BTC/USD")
-   * @param {string} direction - "buy" or "sell"
-   * @param {number} amount - Quantity to trade
-   * @param {number} expiration - Unix timestamp for expiration
+   * @param id - Unique identifier
+   * @param market - Trading pair (e.g., "BTC/USD")
+   * @param direction - "buy" or "sell"
+   * @param amount - Quantity to trade
+   * @param expiration - Unix timestamp for expiration
    */
-  constructor(id, market, direction, amount, expiration) {
+  constructor(
+    id: string,
+    market: string,
+    direction: Direction,
+    amount: number,
+    expiration: number
+  ) {
     this.validate(id, market, direction, amount, expiration);
     
     this.id = id;
@@ -19,7 +36,7 @@ class RFQ {
     this.direction = direction;
     this.amount = amount;
     this.expiration = expiration;
-    this.status = 'open';
+    this.status = RFQStatus.OPEN;
     this.createdAt = Date.now();
     this.selectedQuoteId = null;
   }
@@ -27,7 +44,13 @@ class RFQ {
   /**
    * Validate RFQ parameters
    */
-  validate(id, market, direction, amount, expiration) {
+  private validate(
+    id: string,
+    market: string,
+    direction: Direction,
+    amount: number,
+    expiration: number
+  ): void {
     if (!id || typeof id !== 'string') {
       throw new Error('RFQ id must be a non-empty string');
     }
@@ -51,50 +74,48 @@ class RFQ {
 
   /**
    * Check if the RFQ is expired
-   * @returns {boolean}
    */
-  isExpired() {
+  public isExpired(): boolean {
     return Date.now() > this.expiration;
   }
 
   /**
    * Check if the RFQ is open for quotes
-   * @returns {boolean}
    */
-  isOpen() {
-    return this.status === 'open' && !this.isExpired();
+  public isOpen(): boolean {
+    return this.status === RFQStatus.OPEN && !this.isExpired();
   }
 
   /**
    * Mark the RFQ as filled with a selected quote
-   * @param {string} quoteId - The ID of the selected quote
+   * @param quoteId - The ID of the selected quote
    */
-  fill(quoteId) {
-    if (this.status !== 'open') {
+  public fill(quoteId: string): void {
+    if (this.status !== RFQStatus.OPEN) {
       throw new Error(`Cannot fill RFQ with status: ${this.status}`);
     }
     if (this.isExpired()) {
       throw new Error('Cannot fill an expired RFQ');
     }
-    this.status = 'filled';
+    this.status = RFQStatus.FILLED;
     this.selectedQuoteId = quoteId;
   }
 
   /**
    * Mark the RFQ as expired
    */
-  expire() {
-    if (this.status === 'open') {
-      this.status = 'expired';
+  public expire(): void {
+    if (this.status === RFQStatus.OPEN) {
+      this.status = RFQStatus.EXPIRED;
     }
   }
 
   /**
    * Cancel the RFQ
    */
-  cancel() {
-    if (this.status === 'open') {
-      this.status = 'cancelled';
+  public cancel(): void {
+    if (this.status === RFQStatus.OPEN) {
+      this.status = RFQStatus.CANCELLED;
     } else {
       throw new Error(`Cannot cancel RFQ with status: ${this.status}`);
     }
@@ -102,9 +123,8 @@ class RFQ {
 
   /**
    * Get a plain object representation of the RFQ
-   * @returns {Object}
    */
-  toJSON() {
+  public toJSON(): IRFQData {
     return {
       id: this.id,
       market: this.market,
@@ -117,5 +137,3 @@ class RFQ {
     };
   }
 }
-
-module.exports = RFQ;

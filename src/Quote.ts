@@ -1,16 +1,29 @@
+import { IQuote, IQuoteData } from './types';
+
 /**
  * Quote Class
  * Represents a maker's response to an RFQ
  */
-class Quote {
+export class Quote implements IQuote {
+  public readonly id: string;
+  public readonly rfqId: string;
+  public readonly makerId: string;
+  public readonly pricePerToken: number;
+  public readonly createdAt: number;
+
   /**
    * Create a Quote
-   * @param {string} id - Unique identifier
-   * @param {string} rfqId - Reference to the RFQ
-   * @param {string} makerId - Identifier for the maker
-   * @param {number} pricePerToken - Price offered by the maker
+   * @param id - Unique identifier
+   * @param rfqId - Reference to the RFQ
+   * @param makerId - Identifier for the maker
+   * @param pricePerToken - Price offered by the maker
    */
-  constructor(id, rfqId, makerId, pricePerToken) {
+  constructor(
+    id: string,
+    rfqId: string,
+    makerId: string,
+    pricePerToken: number
+  ) {
     this.validate(id, rfqId, makerId, pricePerToken);
     
     this.id = id;
@@ -23,7 +36,12 @@ class Quote {
   /**
    * Validate Quote parameters
    */
-  validate(id, rfqId, makerId, pricePerToken) {
+  private validate(
+    id: string,
+    rfqId: string,
+    makerId: string,
+    pricePerToken: number
+  ): void {
     if (!id || typeof id !== 'string') {
       throw new Error('Quote id must be a non-empty string');
     }
@@ -43,9 +61,8 @@ class Quote {
 
   /**
    * Get a plain object representation of the Quote
-   * @returns {Object}
    */
-  toJSON() {
+  public toJSON(): IQuoteData {
     return {
       id: this.id,
       rfqId: this.rfqId,
@@ -55,5 +72,3 @@ class Quote {
     };
   }
 }
-
-module.exports = Quote;

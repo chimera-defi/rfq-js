@@ -1,0 +1,102 @@
+/**
+ * Type definitions for the RFQ system
+ */
+
+/**
+ * Status of an RFQ
+ */
+export enum RFQStatus {
+  OPEN = 'open',
+  FILLED = 'filled',
+  EXPIRED = 'expired',
+  CANCELLED = 'cancelled'
+}
+
+/**
+ * Direction of trade
+ */
+export type Direction = 'buy' | 'sell';
+
+/**
+ * RFQ data structure (plain object)
+ */
+export interface IRFQData {
+  id: string;
+  market: string;
+  direction: Direction;
+  amount: number;
+  expiration: number;
+  status: RFQStatus;
+  createdAt: number;
+  selectedQuoteId: string | null;
+}
+
+/**
+ * Quote data structure (plain object)
+ */
+export interface IQuoteData {
+  id: string;
+  rfqId: string;
+  makerId: string;
+  pricePerToken: number;
+  createdAt: number;
+}
+
+/**
+ * Statistics for RFQ system
+ */
+export interface IRFQStats {
+  totalRFQs: number;
+  totalQuotes: number;
+  rfqsByStatus: Record<RFQStatus, number>;
+}
+
+/**
+ * RFQ details with quotes
+ */
+export interface IRFQDetails {
+  rfq: IRFQData;
+  quotes: IQuoteData[];
+}
+
+/**
+ * Result of selecting a quote
+ */
+export interface ISelectQuoteResult {
+  rfq: IRFQ;
+  quote: IQuote;
+}
+
+/**
+ * RFQ interface (class methods)
+ */
+export interface IRFQ {
+  readonly id: string;
+  readonly market: string;
+  readonly direction: Direction;
+  readonly amount: number;
+  readonly expiration: number;
+  status: RFQStatus;
+  readonly createdAt: number;
+  selectedQuoteId: string | null;
+  
+  isExpired(): boolean;
+  isOpen(): boolean;
+  fill(quoteId: string): void;
+  expire(): void;
+  cancel(): void;
+  toJSON(): IRFQData;
+}
+
+/**
+ * Quote interface (class methods)
+ */
+export interface IQuote {
+  readonly id: string;
+  readonly rfqId: string;
+  readonly makerId: string;
+  readonly pricePerToken: number;
+  readonly createdAt: number;
+  
+  toJSON(): IQuoteData;
+}

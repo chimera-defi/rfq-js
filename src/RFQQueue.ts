@@ -1,21 +1,26 @@
+import { IRFQ, IQuote, IRFQStats, ISelectQuoteResult, RFQStatus } from './types';
+
 /**
  * RFQQueue Class
  * Manages the queue of RFQs and quotes in memory
  */
-class RFQQueue {
+export class RFQQueue {
+  private rfqs: Map<string, IRFQ>;
+  private quotes: Map<string, IQuote>;
+  private rfqQuotes: Map<string, Set<string>>;
+
   constructor() {
-    // Storage maps
-    this.rfqs = new Map(); // rfqId -> RFQ object
-    this.quotes = new Map(); // quoteId -> Quote object
-    this.rfqQuotes = new Map(); // rfqId -> Set of quote IDs
+    this.rfqs = new Map();
+    this.quotes = new Map();
+    this.rfqQuotes = new Map();
   }
 
   /**
    * Add an RFQ to the queue
-   * @param {RFQ} rfq - The RFQ to add
-   * @returns {RFQ} The added RFQ
+   * @param rfq - The RFQ to add
+   * @returns The added RFQ
    */
-  addRFQ(rfq) {
+  public addRFQ(rfq: IRFQ): IRFQ {
     if (!rfq || !rfq.id) {
       throw new Error('Invalid RFQ object');
     }
@@ -31,27 +36,27 @@ class RFQQueue {
 
   /**
    * Get an RFQ by ID
-   * @param {string} rfqId - The RFQ ID
-   * @returns {RFQ|null} The RFQ or null if not found
+   * @param rfqId - The RFQ ID
+   * @returns The RFQ or null if not found
    */
-  getRFQ(rfqId) {
+  public getRFQ(rfqId: string): IRFQ | null {
     return this.rfqs.get(rfqId) || null;
   }
 
   /**
    * Get all RFQs
-   * @returns {Array<RFQ>} Array of all RFQs
+   * @returns Array of all RFQs
    */
-  getAllRFQs() {
+  public getAllRFQs(): IRFQ[] {
     return Array.from(this.rfqs.values());
   }
 
   /**
    * Add a quote to the queue
-   * @param {Quote} quote - The quote to add
-   * @returns {Quote} The added quote
+   * @param quote - The quote to add
+   * @returns The added quote
    */
-  addQuote(quote) {
+  public addQuote(quote: IQuote): IQuote {
     if (!quote || !quote.id || !quote.rfqId) {
       throw new Error('Invalid Quote object');
     }
@@ -64,7 +69,7 @@ class RFQQueue {
 
     // Check if RFQ is open
     if (!rfq.isOpen()) {
-      if (rfq.isExpired() && rfq.status === 'open') {
+      if (rfq.isExpired() && rfq.status === RFQStatus.OPEN) {
         throw new Error(`Cannot add quote to expired RFQ (id: ${rfq.id})`);
       }
       throw new Error(`Cannot add quote to RFQ with status: ${rfq.status}`);
@@ -76,25 +81,25 @@ class RFQQueue {
     }
 
     this.quotes.set(quote.id, quote);
-    this.rfqQuotes.get(quote.rfqId).add(quote.id);
+    this.rfqQuotes.get(quote.rfqId)!.add(quote.id);
     return quote;
   }
 
   /**
    * Get a quote by ID
-   * @param {string} quoteId - The quote ID
-   * @returns {Quote|null} The quote or null if not found
+   * @param quoteId - The quote ID
+   * @returns The quote or null if not found
    */
-  getQuote(quoteId) {
+  public getQuote(quoteId: string): IQuote | null {
     return this.quotes.get(quoteId) || null;
   }
 
   /**
    * Get all quotes for a specific RFQ
-   * @param {string} rfqId - The RFQ ID
-   * @returns {Array<Quote>} Array of quotes for the RFQ
+   * @param rfqId - The RFQ ID
+   * @returns Array of quotes for the RFQ
    */
-  getQuotes(rfqId) {
+  public getQuotes(rfqId: string): IQuote[] {
     const quoteIds = this.rfqQuotes.get(rfqId);
     if (!quoteIds) {
       return [];
@@ -102,16 +107,16 @@ class RFQQueue {
 
     return Array.from(quoteIds)
       .map(id => this.quotes.get(id))
-      .filter(quote => quote !== undefined);
+      .filter((quote): quote is IQuote => quote !== undefined);
   }
 
   /**
    * Select a quote and mark the RFQ as filled
-   * @param {string} rfqId - The RFQ ID
-   * @param {string} quoteId - The quote ID to select
-   * @returns {Object} Object with the filled RFQ and selected quote
+   * @param rfqId - The RFQ ID
+   * @param quoteId - The quote ID to select
+   * @returns Object with the filled RFQ and selected quote
    */
-  selectQuote(rfqId, quoteId) {
+  public selectQuote(rfqId: string, quoteId: string): ISelectQuoteResult {
     const rfq = this.getRFQ(rfqId);
     if (!rfq) {
       throw new Error(`RFQ with id ${rfqId} not found`);
@@ -137,14 +142,14 @@ class RFQQueue {
 
   /**
    * Expire all RFQs that have passed their expiration time
-   * @returns {Array<RFQ>} Array of expired RFQs
+   * @returns Array of expired RFQs
    */
-  expireRFQs() {
-    const expiredRFQs = [];
+  public expireRFQs(): IRFQ[] {
+    const expiredRFQs: IRFQ[] = [];
     const now = Date.now();
 
     for (const rfq of this.rfqs.values()) {
-      if (rfq.status === 'open' && rfq.expiration <= now) {
+      if (rfq.status === RFQStatus.OPEN && rfq.expiration <= now) {
         rfq.expire();
         expiredRFQs.push(rfq);
       }
@@ -155,14 +160,14 @@ class RFQQueue {
 
   /**
    * Get statistics about the queue
-   * @returns {Object} Statistics object
+   * @returns Statistics object
    */
-  getStats() {
-    const rfqsByStatus = {
-      open: 0,
-      filled: 0,
-      expired: 0,
-      cancelled: 0
+  public getStats(): IRFQStats {
+    const rfqsByStatus: Record<RFQStatus, number> = {
+      [RFQStatus.OPEN]: 0,
+      [RFQStatus.FILLED]: 0,
+      [RFQStatus.EXPIRED]: 0,
+      [RFQStatus.CANCELLED]: 0
     };
 
     for (const rfq of this.rfqs.values()) {
@@ -179,11 +184,9 @@ class RFQQueue {
   /**
    * Clear all data (useful for testing)
    */
-  clear() {
+  public clear(): void {
     this.rfqs.clear();
     this.quotes.clear();
     this.rfqQuotes.clear();
   }
 }
-
-module.exports = RFQQueue;

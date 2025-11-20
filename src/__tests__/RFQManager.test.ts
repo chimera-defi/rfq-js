@@ -1,22 +1,13 @@
-const RFQManager = require('./RFQManager');
+import { RFQManager } from '../RFQManager';
 
 describe('RFQManager', () => {
-  let manager;
+  let manager: RFQManager;
 
   beforeEach(() => {
     manager = new RFQManager();
   });
 
-  describe('generateId', () => {
-    test('should generate unique IDs', () => {
-      const id1 = manager.generateId('test');
-      const id2 = manager.generateId('test');
-      
-      expect(id1).not.toBe(id2);
-      expect(id1).toContain('test_');
-      expect(id2).toContain('test_');
-    });
-  });
+  // Note: generateId is now private, tested indirectly through createRFQ and submitQuote
 
   describe('createRFQ', () => {
     test('should create and add an RFQ', () => {
@@ -43,7 +34,7 @@ describe('RFQManager', () => {
       expect(() => manager.createRFQ('', 'buy', 100, 60000))
         .toThrow('Market must be a non-empty string');
       
-      expect(() => manager.createRFQ('BTC/USD', 'hold', 100, 60000))
+      expect(() => manager.createRFQ('BTC/USD', 'hold' as any, 100, 60000))
         .toThrow('Direction must be either "buy" or "sell"');
       
       expect(() => manager.createRFQ('BTC/USD', 'buy', -10, 60000))
@@ -55,7 +46,7 @@ describe('RFQManager', () => {
       const details = manager.getRFQDetails(rfq.id);
       
       expect(details).toBeDefined();
-      expect(details.rfq.id).toBe(rfq.id);
+      expect(details!.rfq.id).toBe(rfq.id);
     });
   });
 
@@ -79,7 +70,7 @@ describe('RFQManager', () => {
       expect(quote1.id).not.toBe(quote2.id);
       
       const details = manager.getRFQDetails(rfq.id);
-      expect(details.quotes).toHaveLength(2);
+      expect(details!.quotes).toHaveLength(2);
     });
 
     test('should throw error for non-existent RFQ', () => {
@@ -161,8 +152,8 @@ describe('RFQManager', () => {
       const details = manager.getRFQDetails(rfq.id);
       
       expect(details).toBeDefined();
-      expect(details.rfq.id).toBe(rfq.id);
-      expect(details.quotes).toHaveLength(2);
+      expect(details!.rfq.id).toBe(rfq.id);
+      expect(details!.quotes).toHaveLength(2);
     });
 
     test('should return null for non-existent RFQ', () => {
@@ -173,8 +164,9 @@ describe('RFQManager', () => {
       const rfq = manager.createRFQ('BTC/USD', 'buy', 100, 60000);
       const details = manager.getRFQDetails(rfq.id);
       
-      expect(details.rfq.id).toBe(rfq.id);
-      expect(details.quotes).toHaveLength(0);
+      expect(details).toBeDefined();
+      expect(details!.rfq.id).toBe(rfq.id);
+      expect(details!.quotes).toHaveLength(0);
     });
   });
 
@@ -196,10 +188,12 @@ describe('RFQManager', () => {
       expect(allDetails).toHaveLength(2);
       
       const rfq1Details = allDetails.find(d => d.rfq.id === rfq1.id);
-      expect(rfq1Details.quotes).toHaveLength(2);
+      expect(rfq1Details).toBeDefined();
+      expect(rfq1Details!.quotes).toHaveLength(2);
       
       const rfq2Details = allDetails.find(d => d.rfq.id === rfq2.id);
-      expect(rfq2Details.quotes).toHaveLength(1);
+      expect(rfq2Details).toBeDefined();
+      expect(rfq2Details!.quotes).toHaveLength(1);
     });
   });
 
@@ -288,13 +282,13 @@ describe('RFQManager', () => {
       expect(rfq.status).toBe('open');
       
       // Multiple makers submit quotes
-      const quote1 = manager.submitQuote(rfq.id, 'maker1', 50000);
+      manager.submitQuote(rfq.id, 'maker1', 50000);
       const quote2 = manager.submitQuote(rfq.id, 'maker2', 49800);
-      const quote3 = manager.submitQuote(rfq.id, 'maker3', 50200);
+      manager.submitQuote(rfq.id, 'maker3', 50200);
       
       // Verify all quotes are stored
       const details = manager.getRFQDetails(rfq.id);
-      expect(details.quotes).toHaveLength(3);
+      expect(details!.quotes).toHaveLength(3);
       
       // Taker selects the best quote (lowest price for buy)
       const result = manager.acceptQuote(rfq.id, quote2.id);
@@ -331,13 +325,16 @@ describe('RFQManager', () => {
       const details2 = manager.getRFQDetails(rfq2.id);
       const details3 = manager.getRFQDetails(rfq3.id);
       
-      expect(details1.quotes).toHaveLength(2);
-      expect(details2.quotes).toHaveLength(2);
-      expect(details3.quotes).toHaveLength(1);
+      expect(details1).toBeDefined();
+      expect(details2).toBeDefined();
+      expect(details3).toBeDefined();
+      expect(details1!.quotes).toHaveLength(2);
+      expect(details2!.quotes).toHaveLength(2);
+      expect(details3!.quotes).toHaveLength(1);
       
       // Accept quotes for some RFQs
-      manager.acceptQuote(rfq1.id, details1.quotes[0].id);
-      manager.acceptQuote(rfq3.id, details3.quotes[0].id);
+      manager.acceptQuote(rfq1.id, details1!.quotes[0].id);
+      manager.acceptQuote(rfq3.id, details3!.quotes[0].id);
       
       // Verify stats
       const stats = manager.getStats();

@@ -1,4 +1,4 @@
-const Quote = require('./Quote');
+import { Quote } from '../Quote';
 
 describe('Quote', () => {
   describe('constructor and validation', () => {
@@ -15,21 +15,21 @@ describe('Quote', () => {
     test('should throw error for invalid id', () => {
       expect(() => new Quote('', 'rfq1', 'maker1', 50000))
         .toThrow('Quote id must be a non-empty string');
-      expect(() => new Quote(null, 'rfq1', 'maker1', 50000))
+      expect(() => new Quote(null as any, 'rfq1', 'maker1', 50000))
         .toThrow('Quote id must be a non-empty string');
     });
 
     test('should throw error for invalid rfqId', () => {
       expect(() => new Quote('quote1', '', 'maker1', 50000))
         .toThrow('RFQ id must be a non-empty string');
-      expect(() => new Quote('quote1', null, 'maker1', 50000))
+      expect(() => new Quote('quote1', null as any, 'maker1', 50000))
         .toThrow('RFQ id must be a non-empty string');
     });
 
     test('should throw error for invalid makerId', () => {
       expect(() => new Quote('quote1', 'rfq1', '', 50000))
         .toThrow('Maker id must be a non-empty string');
-      expect(() => new Quote('quote1', 'rfq1', null, 50000))
+      expect(() => new Quote('quote1', 'rfq1', null as any, 50000))
         .toThrow('Maker id must be a non-empty string');
     });
 
@@ -38,7 +38,7 @@ describe('Quote', () => {
         .toThrow('Price per token must be a positive finite number');
       expect(() => new Quote('quote1', 'rfq1', 'maker1', -100))
         .toThrow('Price per token must be a positive finite number');
-      expect(() => new Quote('quote1', 'rfq1', 'maker1', '50000'))
+      expect(() => new Quote('quote1', 'rfq1', 'maker1', '50000' as any))
         .toThrow('Price per token must be a positive finite number');
     });
 

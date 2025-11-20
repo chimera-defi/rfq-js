@@ -3,10 +3,10 @@
  * End-to-end tests for the complete RFQ system
  */
 
-const { RFQManager } = require('./index');
+import { RFQManager } from '../RFQManager';
 
 describe('RFQ System - Integration Tests', () => {
-  let manager;
+  let manager: RFQManager;
 
   beforeEach(() => {
     manager = new RFQManager();
@@ -34,7 +34,8 @@ describe('RFQ System - Integration Tests', () => {
       
       // Step 3: Verify all quotes are visible
       const rfqDetails = manager.getRFQDetails(rfq.id);
-      expect(rfqDetails.quotes).toHaveLength(3);
+      expect(rfqDetails).toBeDefined();
+      expect(rfqDetails!.quotes).toHaveLength(3);
       
       // Step 4: Taker selects the best quote (lowest price for buy order)
       const result = manager.acceptQuote(rfq.id, quote2.id);
@@ -70,15 +71,15 @@ describe('RFQ System - Integration Tests', () => {
       manager.submitQuote(solRfq.id, 'maker_charlie', 100);
       
       // Verify each RFQ has correct quotes
-      expect(manager.getRFQDetails(btcRfq.id).quotes).toHaveLength(2);
-      expect(manager.getRFQDetails(ethRfq.id).quotes).toHaveLength(3);
-      expect(manager.getRFQDetails(solRfq.id).quotes).toHaveLength(1);
+      expect(manager.getRFQDetails(btcRfq.id)!.quotes).toHaveLength(2);
+      expect(manager.getRFQDetails(ethRfq.id)!.quotes).toHaveLength(3);
+      expect(manager.getRFQDetails(solRfq.id)!.quotes).toHaveLength(1);
       
       // Fill some RFQs
-      const btcQuote = manager.getRFQDetails(btcRfq.id).quotes[1];
+      const btcQuote = manager.getRFQDetails(btcRfq.id)!.quotes[1];
       manager.acceptQuote(btcRfq.id, btcQuote.id);
       
-      const ethQuote = manager.getRFQDetails(ethRfq.id).quotes[2];
+      const ethQuote = manager.getRFQDetails(ethRfq.id)!.quotes[2];
       manager.acceptQuote(ethRfq.id, ethQuote.id);
       
       // Verify only SOL RFQ is still open
@@ -109,12 +110,14 @@ describe('RFQ System - Integration Tests', () => {
       
       // Verify directions are preserved
       const buyDetails = manager.getRFQDetails(buyRfq.id);
-      expect(buyDetails.rfq.direction).toBe('buy');
-      expect(buyDetails.quotes).toHaveLength(2);
+      expect(buyDetails).toBeDefined();
+      expect(buyDetails!.rfq.direction).toBe('buy');
+      expect(buyDetails!.quotes).toHaveLength(2);
       
       const sellDetails = manager.getRFQDetails(sellRfq.id);
-      expect(sellDetails.rfq.direction).toBe('sell');
-      expect(sellDetails.quotes).toHaveLength(2);
+      expect(sellDetails).toBeDefined();
+      expect(sellDetails!.rfq.direction).toBe('sell');
+      expect(sellDetails!.quotes).toHaveLength(2);
     });
   });
 
@@ -137,7 +140,8 @@ describe('RFQ System - Integration Tests', () => {
       // Verify RFQ is expired
       manager.expireOldRFQs();
       const details = manager.getRFQDetails(rfq.id);
-      expect(details.rfq.status).toBe('expired');
+      expect(details).toBeDefined();
+      expect(details!.rfq.status).toBe('expired');
     });
 
     test('should prevent accepting quotes on expired RFQs', async () => {
@@ -165,7 +169,8 @@ describe('RFQ System - Integration Tests', () => {
       
       // Verify old RFQ is expired
       const details = manager.getRFQDetails(oldRfq.id);
-      expect(details.rfq.status).toBe('expired');
+      expect(details).toBeDefined();
+      expect(details!.rfq.status).toBe('expired');
     });
   });
 
@@ -222,16 +227,17 @@ describe('RFQ System - Integration Tests', () => {
       const rfq = manager.createRFQ('BTC/USD', 'buy', 10, 60000);
       
       // Makers compete with progressively better prices
-      const quote1 = manager.submitQuote(rfq.id, 'maker_alice', 50000);
-      const quote2 = manager.submitQuote(rfq.id, 'maker_bob', 49900);
-      const quote3 = manager.submitQuote(rfq.id, 'maker_charlie', 49800);
-      const quote4 = manager.submitQuote(rfq.id, 'maker_david', 49750);
+      manager.submitQuote(rfq.id, 'maker_alice', 50000);
+      manager.submitQuote(rfq.id, 'maker_bob', 49900);
+      manager.submitQuote(rfq.id, 'maker_charlie', 49800);
+      manager.submitQuote(rfq.id, 'maker_david', 49750);
       
       const details = manager.getRFQDetails(rfq.id);
-      expect(details.quotes).toHaveLength(4);
+      expect(details).toBeDefined();
+      expect(details!.quotes).toHaveLength(4);
       
       // Find the best price (lowest for buy)
-      const bestQuote = details.quotes.reduce((best, current) => 
+      const bestQuote = details!.quotes.reduce((best, current) => 
         current.pricePerToken < best.pricePerToken ? current : best
       );
       
@@ -267,7 +273,7 @@ describe('RFQ System - Integration Tests', () => {
       rfqs.forEach((rfq, i) => {
         if (i % 3 === 0) {
           const details = manager.getRFQDetails(rfq.id);
-          manager.acceptQuote(rfq.id, details.quotes[0].id);
+          manager.acceptQuote(rfq.id, details!.quotes[0].id);
         }
       });
       
@@ -328,14 +334,14 @@ describe('RFQ System - Integration Tests', () => {
       console.log('\nTakers selecting quotes...');
       
       const btcDetails = manager.getRFQDetails(btcBuyRfq.id);
-      const bestBtcQuote = btcDetails.quotes.reduce((best, q) => 
+      const bestBtcQuote = btcDetails!.quotes.reduce((best, q) => 
         q.pricePerToken < best.pricePerToken ? q : best
       );
       console.log(`Taker 1 selects ${bestBtcQuote.makerId} at ${bestBtcQuote.pricePerToken}`);
       manager.acceptQuote(btcBuyRfq.id, bestBtcQuote.id);
       
       const ethDetails = manager.getRFQDetails(ethSellRfq.id);
-      const bestEthQuote = ethDetails.quotes.reduce((best, q) => 
+      const bestEthQuote = ethDetails!.quotes.reduce((best, q) => 
         q.pricePerToken > best.pricePerToken ? q : best
       );
       console.log(`Taker 2 selects ${bestEthQuote.makerId} at ${bestEthQuote.pricePerToken}`);
