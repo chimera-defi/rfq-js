@@ -20,11 +20,11 @@ export function validateRFQ(
   amount: number,
   expiration: number
 ): asserts direction is RFQDirection {
-  if (!rfqId || typeof rfqId !== 'string' || rfqId.trim() === '') {
+  if (!rfqId || typeof rfqId !== 'string' || rfqId.trim().length === 0) {
     throw new Error('RFQ ID must be a non-empty string');
   }
 
-  if (!market || typeof market !== 'string' || market.trim() === '') {
+  if (!market || typeof market !== 'string' || market.trim().length === 0) {
     throw new Error('Market must be a non-empty string');
   }
 
@@ -32,11 +32,11 @@ export function validateRFQ(
     throw new Error('Direction must be either "buy" or "sell"');
   }
 
-  if (typeof amount !== 'number' || amount <= 0 || !isFinite(amount)) {
-    throw new Error('Amount must be a positive number');
+  if (typeof amount !== 'number' || amount <= 0 || !Number.isFinite(amount)) {
+    throw new Error('Amount must be a positive finite number');
   }
 
-  if (typeof expiration !== 'number' || expiration <= Date.now() || !isFinite(expiration)) {
+  if (typeof expiration !== 'number' || !Number.isFinite(expiration) || expiration <= Date.now()) {
     throw new Error('Expiration must be a future timestamp');
   }
 }
@@ -53,15 +53,15 @@ export function validateQuote(
   rfqId: string,
   pricePerToken: number
 ): void {
-  if (!quoteId || typeof quoteId !== 'string' || quoteId.trim() === '') {
+  if (!quoteId || typeof quoteId !== 'string' || quoteId.trim().length === 0) {
     throw new Error('Quote ID must be a non-empty string');
   }
 
-  if (!rfqId || typeof rfqId !== 'string' || rfqId.trim() === '') {
+  if (!rfqId || typeof rfqId !== 'string' || rfqId.trim().length === 0) {
     throw new Error('RFQ ID must be a non-empty string');
   }
 
-  if (typeof pricePerToken !== 'number' || pricePerToken <= 0 || !isFinite(pricePerToken)) {
-    throw new Error('Price per token must be a positive number');
+  if (typeof pricePerToken !== 'number' || pricePerToken <= 0 || !Number.isFinite(pricePerToken)) {
+    throw new Error('Price per token must be a positive finite number');
   }
 }

@@ -127,17 +127,28 @@ export class RFQSystem {
     pricePerToken: number,
     makerId: string | null = null
   ): Quote {
-    // Check for expired RFQs first
-    this.checkExpirations();
-
-    // Verify RFQ exists and is open
+    // Verify RFQ exists first (before expiration check)
     const rfq = this.rfqManager.getRFQ(rfqId);
     if (!rfq) {
       throw new Error(`RFQ with ID "${rfqId}" not found`);
     }
 
-    if (!rfq.isOpen()) {
-      throw new Error(`Cannot add quote to RFQ with status "${rfq.status}"`);
+    // Check if expired but status not yet updated (clearer error message)
+    if (rfq.isExpired() && rfq.status === 'open') {
+      throw new Error(`Cannot add quote to expired RFQ (id: ${rfqId})`);
+    }
+
+    // Check for expired RFQs (updates status)
+    this.checkExpirations();
+
+    // Re-fetch RFQ after expiration check (status may have changed)
+    const updatedRfq = this.rfqManager.getRFQ(rfqId);
+    if (!updatedRfq) {
+      throw new Error(`RFQ with ID "${rfqId}" not found`);
+    }
+
+    if (!updatedRfq.isOpen()) {
+      throw new Error(`Cannot add quote to RFQ with status "${updatedRfq.status}"`);
     }
 
     const quote = this.quoteManager.addQuote(quoteId, rfqId, pricePerToken, makerId);

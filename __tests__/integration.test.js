@@ -78,16 +78,16 @@ describe('RFQ System Integration Tests', () => {
 
   describe('Expiration Scenarios', () => {
     it('should prevent adding quotes to expired RFQs', () => {
-      const expiration = Date.now() + 100; // Very short expiration
+      const expiration = Date.now() + 3600000; // Future expiration
       const rfq = system.createRFQ('rfq1', 'ETH/USD', 'buy', 100, expiration);
 
-      // Wait for expiration (simulate)
+      // Manually expire it (before checkExpirations is called)
       rfq.expiration = Date.now() - 1000;
 
-      // Try to add quote - should check expiration first
+      // Try to add quote - should detect expired RFQ even if status is still "open"
       expect(() => {
         system.addQuote('quote1', 'rfq1', 100.0);
-      }).toThrow('Cannot add quote to RFQ with status "expired"');
+      }).toThrow('Cannot add quote to expired RFQ (id: rfq1)');
     });
 
     it('should prevent accepting quotes for expired RFQs', () => {

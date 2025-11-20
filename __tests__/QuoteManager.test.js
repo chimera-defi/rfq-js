@@ -46,11 +46,11 @@ describe('QuoteManager', () => {
     it('should throw error for invalid price', () => {
       expect(() => {
         manager.addQuote('quote1', 'rfq1', -100.5);
-      }).toThrow('Price per token must be a positive number');
+      }).toThrow('Price per token must be a positive finite number');
 
       expect(() => {
         manager.addQuote('quote1', 'rfq1', 0);
-      }).toThrow('Price per token must be a positive number');
+      }).toThrow('Price per token must be a positive finite number');
     });
   });
 

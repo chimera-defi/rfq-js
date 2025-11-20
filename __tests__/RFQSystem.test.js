@@ -55,13 +55,27 @@ describe('RFQSystem', () => {
     });
 
     it('should throw error if RFQ is expired', () => {
-      const pastExpiration = Date.now() - 1000;
+      // Create RFQ with future expiration first
       const rfq = system.createRFQ('rfq2', 'BTC/USD', 'sell', 50, Date.now() + 3600000);
-      rfq.expiration = pastExpiration; // Force expiration
+      // Manually expire it
+      rfq.expiration = Date.now() - 1000;
+      // Force expiration check to update status
+      system.checkExpirations();
 
       expect(() => {
         system.addQuote('quote1', 'rfq2', 100.5);
       }).toThrow('Cannot add quote to RFQ with status "expired"');
+    });
+
+    it('should give clear error for expired RFQ before expiration check', () => {
+      // Create RFQ with future expiration, then manually expire it
+      const rfq = system.createRFQ('rfq3', 'ETH/USD', 'buy', 100, Date.now() + 3600000);
+      rfq.expiration = Date.now() - 1000; // Force expiration without calling checkExpirations
+
+      // This should detect expired RFQ even if status is still "open"
+      expect(() => {
+        system.addQuote('quote1', 'rfq3', 100.5);
+      }).toThrow('Cannot add quote to expired RFQ (id: rfq3)');
     });
   });
 

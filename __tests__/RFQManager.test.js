@@ -54,11 +54,11 @@ describe('RFQManager', () => {
       const expiration = Date.now() + 3600000;
       expect(() => {
         manager.createRFQ('rfq1', 'ETH/USD', 'buy', -100, expiration);
-      }).toThrow('Amount must be a positive number');
+      }).toThrow('Amount must be a positive finite number');
 
       expect(() => {
         manager.createRFQ('rfq1', 'ETH/USD', 'buy', 0, expiration);
-      }).toThrow('Amount must be a positive number');
+      }).toThrow('Amount must be a positive finite number');
     });
 
     it('should throw error for past expiration', () => {

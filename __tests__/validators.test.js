@@ -63,19 +63,35 @@ describe('Validators', () => {
     it('should throw error for invalid amount', () => {
       expect(() => {
         validateRFQ(validRFQId, validMarket, validDirection, -100, validExpiration);
-      }).toThrow('Amount must be a positive number');
+      }).toThrow('Amount must be a positive finite number');
 
       expect(() => {
         validateRFQ(validRFQId, validMarket, validDirection, 0, validExpiration);
-      }).toThrow('Amount must be a positive number');
+      }).toThrow('Amount must be a positive finite number');
 
       expect(() => {
         validateRFQ(validRFQId, validMarket, validDirection, NaN, validExpiration);
-      }).toThrow('Amount must be a positive number');
+      }).toThrow('Amount must be a positive finite number');
 
       expect(() => {
         validateRFQ(validRFQId, validMarket, validDirection, Infinity, validExpiration);
-      }).toThrow('Amount must be a positive number');
+      }).toThrow('Amount must be a positive finite number');
+    });
+
+    it('should throw error for Infinity expiration', () => {
+      expect(() => {
+        validateRFQ(validRFQId, validMarket, validDirection, validAmount, Infinity);
+      }).toThrow('Expiration must be a future timestamp');
+    });
+
+    it('should throw error for whitespace-only strings', () => {
+      expect(() => {
+        validateRFQ('   ', validMarket, validDirection, validAmount, validExpiration);
+      }).toThrow('RFQ ID must be a non-empty string');
+
+      expect(() => {
+        validateRFQ(validRFQId, '   ', validDirection, validAmount, validExpiration);
+      }).toThrow('Market must be a non-empty string');
     });
 
     it('should accept valid amounts', () => {
@@ -145,19 +161,37 @@ describe('Validators', () => {
     it('should throw error for invalid price', () => {
       expect(() => {
         validateQuote(validQuoteId, validRFQId, -100);
-      }).toThrow('Price per token must be a positive number');
+      }).toThrow('Price per token must be a positive finite number');
 
       expect(() => {
         validateQuote(validQuoteId, validRFQId, 0);
-      }).toThrow('Price per token must be a positive number');
+      }).toThrow('Price per token must be a positive finite number');
 
       expect(() => {
         validateQuote(validQuoteId, validRFQId, NaN);
-      }).toThrow('Price per token must be a positive number');
+      }).toThrow('Price per token must be a positive finite number');
 
       expect(() => {
         validateQuote(validQuoteId, validRFQId, Infinity);
-      }).toThrow('Price per token must be a positive number');
+      }).toThrow('Price per token must be a positive finite number');
+    });
+
+    it('should throw error for whitespace-only quote ID', () => {
+      expect(() => {
+        validateQuote('   ', validRFQId, validPrice);
+      }).toThrow('Quote ID must be a non-empty string');
+
+      expect(() => {
+        validateQuote(validQuoteId, '   ', validPrice);
+      }).toThrow('RFQ ID must be a non-empty string');
+
+      expect(() => {
+        validateQuote(validQuoteId, validRFQId, NaN);
+      }).toThrow('Price per token must be a positive finite number');
+
+      expect(() => {
+        validateQuote(validQuoteId, validRFQId, Infinity);
+      }).toThrow('Price per token must be a positive finite number');
     });
 
     it('should accept valid prices', () => {
