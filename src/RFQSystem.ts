@@ -250,4 +250,59 @@ export class RFQSystem {
       expiredRFQs: this.rfqManager.getAllRFQs({ status: 'expired' }).length
     };
   }
+
+  /**
+   * Create RFQ and add first quote in one step (2-step workflow option)
+   * This is a convenience method that combines createRFQ and addQuote
+   * @param rfqId - Unique RFQ identifier
+   * @param market - Market/token pair
+   * @param direction - 'buy' or 'sell'
+   * @param amount - Amount of tokens
+   * @param expiration - Expiration timestamp (Unix timestamp)
+   * @param quoteId - Unique quote identifier
+   * @param pricePerToken - Price per token
+   * @param makerId - Optional maker identifier
+   * @returns Object containing created RFQ and Quote
+   */
+  createRFQWithQuote(
+    rfqId: string,
+    market: string,
+    direction: RFQDirection,
+    amount: number,
+    expiration: number,
+    quoteId: string,
+    pricePerToken: number,
+    makerId: string | null = null
+  ): { rfq: RFQ; quote: Quote } {
+    const rfq = this.createRFQ(rfqId, market, direction, amount, expiration);
+    const quote = this.addQuote(quoteId, rfqId, pricePerToken, makerId);
+    return { rfq, quote };
+  }
+
+  /**
+   * Create RFQ, add quote, and accept it immediately (2-step workflow option)
+   * This is a convenience method for immediate acceptance scenarios
+   * @param rfqId - Unique RFQ identifier
+   * @param market - Market/token pair
+   * @param direction - 'buy' or 'sell'
+   * @param amount - Amount of tokens
+   * @param expiration - Expiration timestamp (Unix timestamp)
+   * @param quoteId - Unique quote identifier
+   * @param pricePerToken - Price per token
+   * @param makerId - Optional maker identifier
+   * @returns Object containing accepted quote and filled RFQ
+   */
+  createAndAcceptQuote(
+    rfqId: string,
+    market: string,
+    direction: RFQDirection,
+    amount: number,
+    expiration: number,
+    quoteId: string,
+    pricePerToken: number,
+    makerId: string | null = null
+  ): AcceptQuoteResult {
+    this.createRFQWithQuote(rfqId, market, direction, amount, expiration, quoteId, pricePerToken, makerId);
+    return this.acceptQuote(quoteId);
+  }
 }

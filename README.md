@@ -73,62 +73,83 @@ npm run test:coverage
 
 ## Usage
 
+### Workflow Options
+
+The system supports three workflow options:
+
+1. **3-Step Workflow** (Traditional): Create RFQ → Add Quotes → Accept Quote
+2. **2-Step Workflow**: Create RFQ with Quote → Accept Quote  
+3. **1-Step Workflow**: Create RFQ, Add Quote, and Accept in one call
+
 ### TypeScript/ES Modules
+
+#### 3-Step Workflow (Traditional)
 
 ```typescript
 import { RFQSystem, type RFQDirection } from './src';
 
-// Create a new RFQ system instance
 const system = new RFQSystem();
+const expiration = Date.now() + 3600000;
 
-// Step 1: Taker creates an RFQ
-const expiration = Date.now() + 3600000; // 1 hour from now
-const rfq = system.createRFQ(
-  'rfq-001',           // RFQ ID
-  'ETH/USD',           // Market
-  'buy' as RFQDirection, // Direction: 'buy' or 'sell'
-  100,                 // Amount
-  expiration           // Expiration timestamp
+// Step 1: Create RFQ
+const rfq = system.createRFQ('rfq-001', 'ETH/USD', 'buy', 100, expiration);
+
+// Step 2: Add quotes
+system.addQuote('quote-001', 'rfq-001', 2500.50, 'maker1');
+system.addQuote('quote-002', 'rfq-001', 2501.00, 'maker2');
+
+// Step 3: Accept quote
+const result = system.acceptQuote('quote-001');
+```
+
+#### 2-Step Workflow (Convenience)
+
+```typescript
+// Step 1: Create RFQ with first quote
+const { rfq, quote } = system.createRFQWithQuote(
+  'rfq-001', 'ETH/USD', 'buy', 100, expiration,
+  'quote-001', 2500.50, 'maker1'
 );
+
+// Step 2: Accept quote (or add more quotes first)
+const result = system.acceptQuote('quote-001');
+```
+
+#### 1-Step Workflow (Immediate Acceptance)
+
+```typescript
+// Single step: Create RFQ, add quote, and accept immediately
+const result = system.createAndAcceptQuote(
+  'rfq-001', 'ETH/USD', 'buy', 100, expiration,
+  'quote-001', 2500.50, 'maker1'
+);
+// RFQ is now filled!
 ```
 
 ### JavaScript/CommonJS
 
 ```javascript
 const { RFQSystem } = require('./dist');
-
-// Create a new RFQ system instance
 const system = new RFQSystem();
+const expiration = Date.now() + 3600000;
 
-// Step 1: Taker creates an RFQ
-const expiration = Date.now() + 3600000; // 1 hour from now
-const rfq = system.createRFQ(
-  'rfq-001',           // RFQ ID
-  'ETH/USD',           // Market
-  'buy',               // Direction: 'buy' or 'sell'
-  100,                 // Amount
-  expiration           // Expiration timestamp
+// 3-Step: Traditional workflow
+const rfq = system.createRFQ('rfq-001', 'ETH/USD', 'buy', 100, expiration);
+system.addQuote('quote-001', 'rfq-001', 2500.50, 'maker1');
+const result = system.acceptQuote('quote-001');
+
+// 2-Step: Create with quote, then accept
+const { rfq, quote } = system.createRFQWithQuote(
+  'rfq-001', 'ETH/USD', 'buy', 100, expiration,
+  'quote-001', 2500.50, 'maker1'
 );
+const result = system.acceptQuote('quote-001');
 
-console.log('Created RFQ:', rfq);
-// Output: { rfqId: 'rfq-001', market: 'ETH/USD', direction: 'buy', ... }
-
-// Step 2: Makers add quotes
-const quote1 = system.addQuote('quote-001', 'rfq-001', 2500.50, 'maker1');
-const quote2 = system.addQuote('quote-002', 'rfq-001', 2501.00, 'maker2');
-const quote3 = system.addQuote('quote-003', 'rfq-001', 2499.75, 'maker3');
-
-console.log('Quotes for RFQ:', system.getQuotesForRFQ('rfq-001'));
-// Output: Array of 3 quotes
-
-// Step 3: Taker accepts the best quote
-const result = system.acceptQuote('quote-003'); // Accept the lowest price
-console.log('Accepted quote:', result.quote);
-console.log('RFQ status:', result.rfq.status); // 'filled'
-
-// View queue activity
-const activity = system.getRecentActivity(10);
-console.log('Recent activity:', activity);
+// 1-Step: All in one
+const result = system.createAndAcceptQuote(
+  'rfq-001', 'ETH/USD', 'buy', 100, expiration,
+  'quote-001', 2500.50, 'maker1'
+);
 ```
 
 ### Advanced Usage
