@@ -17,7 +17,7 @@ The system has two types of actors with distinct roles:
 - **Actions**: View RFQs, add quotes to RFQs
 - **Workflow**: Discover RFQ → Evaluate → Add quote → Wait for acceptance
 
-See [ACTOR_MODEL.md](./ACTOR_MODEL.md) for detailed actor documentation.
+See [ACTOR_MODEL.md](./ACTOR_MODEL.md) for detailed actor documentation (same directory).
 
 ## Core Concepts
 

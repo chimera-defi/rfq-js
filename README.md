@@ -17,7 +17,7 @@ This system allows:
 - RFQ lifecycle management (create, expire, cancel)
 - Quote management and acceptance
 - Event queue tracking
-- Comprehensive test suite with Jest (123 tests, 97%+ coverage)
+- Comprehensive test suite with Jest (127 tests, 97%+ coverage)
 
 ## Project Structure
 
@@ -30,10 +30,12 @@ This system allows:
 │   ├── RFQSystem.ts  # Main system orchestrator
 │   └── index.ts     # Main entry point
 ├── dist/             # Compiled JavaScript output (generated)
+├── docs/             # Documentation
+│   ├── DESIGN.md    # System design and specifications
+│   ├── ACTOR_MODEL.md # Actor model documentation
+│   └── ...          # Additional documentation files
 ├── __tests__/        # Test files
 ├── tsconfig.json     # TypeScript configuration
-├── DESIGN.md         # Design document and specifications
-├── TASKS.md          # Implementation task list
 └── package.json      # Dependencies and scripts
 ```
 
@@ -80,7 +82,7 @@ The system has two types of actors:
 - **Takers**: Create RFQs and accept quotes
 - **Makers**: Add quotes to RFQs
 
-See [ACTOR_MODEL.md](./ACTOR_MODEL.md) for detailed documentation.
+See [docs/ACTOR_MODEL.md](./docs/ACTOR_MODEL.md) for detailed documentation.
 
 ### Standard Workflow
 
@@ -178,10 +180,13 @@ try {
 }
 ```
 
-## Design
+## Documentation
 
-See [DESIGN.md](./DESIGN.md) for detailed system design and specifications.
+- **[Design Document](./docs/DESIGN.md)** - System design and specifications
+- **[Actor Model](./docs/ACTOR_MODEL.md)** - Detailed actor documentation (Takers vs Makers)
+- **[TypeScript Integration](./docs/TYPESCRIPT_INTEGRATION.md)** - TypeScript setup and usage
+- **[Code Review](./docs/CODE_REVIEW.md)** - Comprehensive code review
+- **[PR Improvements](./docs/PR_IMPROVEMENTS.md)** - Improvements adopted from PR #3
+- **[Tasks](./docs/TASKS.md)** - Implementation task list and progress
 
-## Tasks
-
-See [TASKS.md](./TASKS.md) for the implementation task list and progress tracking.
+For reviews and summaries, see the [docs](./docs/) directory.
