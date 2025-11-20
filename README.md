@@ -148,12 +148,14 @@ Comprehensive event tracking system:
 
 ## 📖 Documentation
 
-- **[DESIGN.md](./DESIGN.md)** - System architecture and design decisions
-- **[ACTOR_MODEL.md](./ACTOR_MODEL.md)** - Taker/Maker workflows and patterns
-- **[TWO_STEP_FEATURE.md](./TWO_STEP_FEATURE.md)** - Auto-accept feature guide
-- **[CODE_REVIEW.md](./CODE_REVIEW.md)** - Comprehensive code review
-- **[TYPESCRIPT_MIGRATION.md](./TYPESCRIPT_MIGRATION.md)** - TypeScript migration guide
-- **[PR_COMPARISON.md](./PR_COMPARISON.md)** - Comparison with other implementations
+- **[DESIGN.md](./docs/DESIGN.md)** - System architecture and design decisions
+- **[ACTOR_MODEL.md](./docs/ACTOR_MODEL.md)** - Taker/Maker workflows and patterns
+- **[TWO_STEP_FEATURE.md](./docs/TWO_STEP_FEATURE.md)** - Auto-accept feature guide
+- **[CODE_REVIEW.md](./docs/CODE_REVIEW.md)** - Comprehensive code review
+- **[TYPESCRIPT_MIGRATION.md](./docs/TYPESCRIPT_MIGRATION.md)** - TypeScript migration guide
+- **[MIGRATION_SUMMARY.md](./docs/MIGRATION_SUMMARY.md)** - Migration summary
+- **[PR_COMPARISON.md](./docs/PR_COMPARISON.md)** - Comparison with other implementations
+- **[IMPLEMENTATION_COMPLETE.md](./docs/IMPLEMENTATION_COMPLETE.md)** - Final implementation summary
 
 ## 🏗️ Project Structure
 
