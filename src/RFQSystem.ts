@@ -22,6 +22,15 @@ export interface SystemStats {
 /**
  * RFQSystem
  * Main orchestrator that coordinates RFQManager, QuoteManager, and QueueManager
+ * 
+ * Actor Model:
+ * - Takers: Create RFQs and accept quotes
+ * - Makers: Add quotes to RFQs
+ * 
+ * Typical Workflow:
+ * 1. Taker creates an RFQ (createRFQ)
+ * 2. Makers add quotes to the RFQ (addQuote)
+ * 3. Taker accepts a quote (acceptQuote)
  */
 export class RFQSystem {
   private rfqManager: RFQManager;
@@ -35,7 +44,8 @@ export class RFQSystem {
   }
 
   /**
-   * Create a new RFQ
+   * Create a new RFQ (Taker Action)
+   * Takers use this method to create a request for quotes
    * @param rfqId - Unique RFQ identifier
    * @param market - Market/token pair
    * @param direction - 'buy' or 'sell'
@@ -85,7 +95,8 @@ export class RFQSystem {
   }
 
   /**
-   * Cancel an RFQ
+   * Cancel an RFQ (Taker Action)
+   * Takers can cancel their own RFQs
    * @param rfqId - RFQ identifier
    * @returns Cancelled RFQ instance
    */
@@ -101,11 +112,12 @@ export class RFQSystem {
   }
 
   /**
-   * Add a quote for an RFQ
+   * Add a quote for an RFQ (Maker Action)
+   * Makers use this method to respond to RFQs with their quotes
    * @param quoteId - Unique quote identifier
    * @param rfqId - RFQ identifier
    * @param pricePerToken - Price per token
-   * @param makerId - Optional maker identifier
+   * @param makerId - Maker identifier (identifies who is providing the quote)
    * @returns Created Quote instance
    * @throws {Error} If RFQ not found, RFQ is not open, or validation fails
    */
@@ -159,7 +171,8 @@ export class RFQSystem {
   }
 
   /**
-   * Accept a quote (taker selects winning quote)
+   * Accept a quote (Taker Action)
+   * Takers use this method to select and accept a winning quote
    * @param quoteId - Quote identifier
    * @returns Object containing accepted quote and updated RFQ
    * @throws {Error} If quote not found, RFQ is not open, or quote already processed
@@ -251,58 +264,4 @@ export class RFQSystem {
     };
   }
 
-  /**
-   * Create RFQ and add first quote in one step (2-step workflow option)
-   * This is a convenience method that combines createRFQ and addQuote
-   * @param rfqId - Unique RFQ identifier
-   * @param market - Market/token pair
-   * @param direction - 'buy' or 'sell'
-   * @param amount - Amount of tokens
-   * @param expiration - Expiration timestamp (Unix timestamp)
-   * @param quoteId - Unique quote identifier
-   * @param pricePerToken - Price per token
-   * @param makerId - Optional maker identifier
-   * @returns Object containing created RFQ and Quote
-   */
-  createRFQWithQuote(
-    rfqId: string,
-    market: string,
-    direction: RFQDirection,
-    amount: number,
-    expiration: number,
-    quoteId: string,
-    pricePerToken: number,
-    makerId: string | null = null
-  ): { rfq: RFQ; quote: Quote } {
-    const rfq = this.createRFQ(rfqId, market, direction, amount, expiration);
-    const quote = this.addQuote(quoteId, rfqId, pricePerToken, makerId);
-    return { rfq, quote };
-  }
-
-  /**
-   * Create RFQ, add quote, and accept it immediately (2-step workflow option)
-   * This is a convenience method for immediate acceptance scenarios
-   * @param rfqId - Unique RFQ identifier
-   * @param market - Market/token pair
-   * @param direction - 'buy' or 'sell'
-   * @param amount - Amount of tokens
-   * @param expiration - Expiration timestamp (Unix timestamp)
-   * @param quoteId - Unique quote identifier
-   * @param pricePerToken - Price per token
-   * @param makerId - Optional maker identifier
-   * @returns Object containing accepted quote and filled RFQ
-   */
-  createAndAcceptQuote(
-    rfqId: string,
-    market: string,
-    direction: RFQDirection,
-    amount: number,
-    expiration: number,
-    quoteId: string,
-    pricePerToken: number,
-    makerId: string | null = null
-  ): AcceptQuoteResult {
-    this.createRFQWithQuote(rfqId, market, direction, amount, expiration, quoteId, pricePerToken, makerId);
-    return this.acceptQuote(quoteId);
-  }
 }

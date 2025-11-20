@@ -1,7 +1,23 @@
 # RFQ System Design Document
 
 ## Overview
-A simple Request for Quote (RFQ) system built in JavaScript for learning purposes. The system allows takers to create RFQs, makers to respond with quotes, and takers to select winning quotes.
+A simple Request for Quote (RFQ) system built in TypeScript for learning purposes. The system operates with two distinct actor types: **Takers** (who create RFQs and accept quotes) and **Makers** (who provide quotes in response to RFQs).
+
+## Actor Model
+
+The system has two types of actors with distinct roles:
+
+### Takers
+- **Purpose**: Request quotes and make trading decisions
+- **Actions**: Create RFQs, view RFQs, accept quotes, cancel RFQs
+- **Workflow**: Create RFQ → Review quotes → Accept best quote
+
+### Makers
+- **Purpose**: Provide quotes in response to RFQs
+- **Actions**: View RFQs, add quotes to RFQs
+- **Workflow**: Discover RFQ → Evaluate → Add quote → Wait for acceptance
+
+See [ACTOR_MODEL.md](./ACTOR_MODEL.md) for detailed actor documentation.
 
 ## Core Concepts
 
