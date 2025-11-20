@@ -1,4 +1,4 @@
-const QuoteManager = require('../src/managers/QuoteManager');
+const { QuoteManager } = require('../src/managers/QuoteManager');
 
 describe('QuoteManager', () => {
   let manager;

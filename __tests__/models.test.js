@@ -1,6 +1,6 @@
-const RFQ = require('../src/models/RFQ');
-const Quote = require('../src/models/Quote');
-const QueueEntry = require('../src/models/QueueEntry');
+const { RFQ } = require('../src/models/RFQ');
+const { Quote } = require('../src/models/Quote');
+const { QueueEntry } = require('../src/models/QueueEntry');
 
 describe('Model Classes', () => {
   describe('RFQ Model', () => {

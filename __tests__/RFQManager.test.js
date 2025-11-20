@@ -1,4 +1,4 @@
-const RFQManager = require('../src/managers/RFQManager');
+const { RFQManager } = require('../src/managers/RFQManager');
 
 describe('RFQManager', () => {
   let manager;

@@ -1,4 +1,4 @@
-const RFQSystem = require('../src/RFQSystem');
+const { RFQSystem } = require('../src/RFQSystem');
 
 describe('RFQSystem', () => {
   let system;

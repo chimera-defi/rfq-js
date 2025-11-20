@@ -1,4 +1,4 @@
-const QueueManager = require('../src/managers/QueueManager');
+const { QueueManager } = require('../src/managers/QueueManager');
 
 describe('QueueManager', () => {
   let manager;

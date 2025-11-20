@@ -1,6 +1,6 @@
-# RFQ System (JavaScript)
+# RFQ System (TypeScript/JavaScript)
 
-A simple Request for Quote (RFQ) system built in JavaScript for learning purposes.
+A simple Request for Quote (RFQ) system built in TypeScript for learning purposes. Fully typed with comprehensive type definitions.
 
 ## Overview
 
@@ -12,21 +12,26 @@ This system allows:
 
 ## Features
 
+- **TypeScript** - Fully typed with comprehensive type definitions
 - In-memory storage (no database required)
 - RFQ lifecycle management (create, expire, cancel)
 - Quote management and acceptance
 - Event queue tracking
-- Comprehensive test suite with Jest
+- Comprehensive test suite with Jest (123 tests, 97%+ coverage)
 
 ## Project Structure
 
 ```
 /workspace
-├── src/              # Source code
+├── src/              # TypeScript source code
 │   ├── models/      # Data models (RFQ, Quote, QueueEntry)
 │   ├── managers/    # Core managers (RFQManager, QuoteManager, QueueManager)
-│   └── RFQSystem.js # Main system orchestrator
+│   ├── utils/       # Utility functions (validators)
+│   ├── RFQSystem.ts  # Main system orchestrator
+│   └── index.ts     # Main entry point
+├── dist/             # Compiled JavaScript output (generated)
 ├── __tests__/        # Test files
+├── tsconfig.json     # TypeScript configuration
 ├── DESIGN.md         # Design document and specifications
 ├── TASKS.md          # Implementation task list
 └── package.json      # Dependencies and scripts
@@ -38,6 +43,19 @@ This system allows:
 
 ```bash
 npm install
+```
+
+### Building
+
+```bash
+# Build TypeScript to JavaScript
+npm run build
+
+# Build in watch mode
+npm run build:watch
+
+# Type check without building
+npm run type-check
 ```
 
 ### Running Tests
@@ -55,10 +73,29 @@ npm run test:coverage
 
 ## Usage
 
-### Basic Example
+### TypeScript/ES Modules
+
+```typescript
+import { RFQSystem, type RFQDirection } from './src';
+
+// Create a new RFQ system instance
+const system = new RFQSystem();
+
+// Step 1: Taker creates an RFQ
+const expiration = Date.now() + 3600000; // 1 hour from now
+const rfq = system.createRFQ(
+  'rfq-001',           // RFQ ID
+  'ETH/USD',           // Market
+  'buy' as RFQDirection, // Direction: 'buy' or 'sell'
+  100,                 // Amount
+  expiration           // Expiration timestamp
+);
+```
+
+### JavaScript/CommonJS
 
 ```javascript
-const { RFQSystem } = require('./src');
+const { RFQSystem } = require('./dist');
 
 // Create a new RFQ system instance
 const system = new RFQSystem();
