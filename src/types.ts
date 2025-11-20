@@ -18,6 +18,15 @@ export enum RFQStatus {
 export type Direction = 'buy' | 'sell';
 
 /**
+ * Auto-accept configuration for RFQ
+ */
+export interface IAutoAcceptConfig {
+  enabled: boolean;
+  minQuotes: number; // Minimum quotes before auto-accepting
+  waitTimeMs?: number; // Optional: wait this long before auto-accepting
+}
+
+/**
  * RFQ data structure (plain object)
  */
 export interface IRFQData {
@@ -29,6 +38,7 @@ export interface IRFQData {
   status: RFQStatus;
   createdAt: number;
   selectedQuoteId: string | null;
+  autoAccept?: IAutoAcceptConfig;
 }
 
 /**
@@ -79,6 +89,7 @@ export interface IRFQ {
   status: RFQStatus;
   readonly createdAt: number;
   selectedQuoteId: string | null;
+  autoAccept?: IAutoAcceptConfig;
   
   isExpired(): boolean;
   isOpen(): boolean;
@@ -86,6 +97,7 @@ export interface IRFQ {
   expire(): void;
   cancel(): void;
   toJSON(): IRFQData;
+  shouldAutoAccept(quoteCount: number): boolean;
 }
 
 /**

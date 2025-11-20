@@ -1,7 +1,7 @@
 import { RFQ } from './RFQ';
 import { Quote } from './Quote';
 import { RFQQueue } from './RFQQueue';
-import { IRFQ, IQuote, IRFQDetails, IRFQStats, ISelectQuoteResult, Direction } from './types';
+import { IRFQ, IQuote, IRFQDetails, IRFQStats, ISelectQuoteResult, Direction, IAutoAcceptConfig } from './types';
 
 /**
  * RFQManager Class
@@ -32,18 +32,20 @@ export class RFQManager {
    * @param direction - "buy" or "sell"
    * @param amount - Quantity to trade
    * @param expirationMs - Time in milliseconds until expiration
+   * @param autoAccept - Optional auto-accept configuration for 2-step process
    * @returns The created RFQ
    */
   public createRFQ(
     market: string,
     direction: Direction,
     amount: number,
-    expirationMs: number
+    expirationMs: number,
+    autoAccept?: IAutoAcceptConfig
   ): IRFQ {
     const id = this.generateId('rfq');
     const expiration = Date.now() + expirationMs;
     
-    const rfq = new RFQ(id, market, direction, amount, expiration);
+    const rfq = new RFQ(id, market, direction, amount, expiration, autoAccept);
     this.queue.addRFQ(rfq);
     
     // Automatically expire old RFQs when creating new ones
@@ -57,7 +59,7 @@ export class RFQManager {
    * @param rfqId - The RFQ ID to quote on
    * @param makerId - Identifier for the maker
    * @param pricePerToken - Price offered
-   * @returns The created quote
+   * @returns The created quote, or auto-accept result if triggered
    */
   public submitQuote(
     rfqId: string,
@@ -71,7 +73,63 @@ export class RFQManager {
     const quote = new Quote(id, rfqId, makerId, pricePerToken);
     
     this.queue.addQuote(quote);
+    
+    // Check if auto-accept should trigger
+    this.checkAndAutoAccept(rfqId);
+    
     return quote;
+  }
+
+  /**
+   * Check if RFQ should auto-accept and execute if conditions met
+   * @param rfqId - The RFQ ID to check
+   * @returns The auto-accepted result, or null if not triggered
+   */
+  private checkAndAutoAccept(rfqId: string): ISelectQuoteResult | null {
+    const rfq = this.queue.getRFQ(rfqId);
+    if (!rfq) {
+      return null;
+    }
+    
+    const quotes = this.queue.getQuotes(rfqId);
+    
+    // Check if should auto-accept
+    if (!rfq.shouldAutoAccept(quotes.length)) {
+      return null;
+    }
+    
+    // Find best quote based on direction
+    const bestQuote = this.findBestQuote(rfq, quotes);
+    if (!bestQuote) {
+      return null;
+    }
+    
+    // Auto-accept the best quote
+    return this.queue.selectQuote(rfqId, bestQuote.id);
+  }
+
+  /**
+   * Find the best quote for an RFQ based on direction
+   * @param rfq - The RFQ
+   * @param quotes - Available quotes
+   * @returns The best quote
+   */
+  private findBestQuote(rfq: IRFQ, quotes: IQuote[]): IQuote | null {
+    if (quotes.length === 0) {
+      return null;
+    }
+    
+    if (rfq.direction === 'buy') {
+      // For buy orders, lowest price is best
+      return quotes.reduce((best, current) => 
+        current.pricePerToken < best.pricePerToken ? current : best
+      );
+    } else {
+      // For sell orders, highest price is best
+      return quotes.reduce((best, current) => 
+        current.pricePerToken > best.pricePerToken ? current : best
+      );
+    }
   }
 
   /**

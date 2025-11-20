@@ -1,4 +1,4 @@
-import { IRFQ, IRFQData, Direction, RFQStatus } from './types';
+import { IRFQ, IRFQData, Direction, RFQStatus, IAutoAcceptConfig } from './types';
 
 /**
  * RFQ (Request for Quote) Class
@@ -13,6 +13,7 @@ export class RFQ implements IRFQ {
   public status: RFQStatus;
   public readonly createdAt: number;
   public selectedQuoteId: string | null;
+  public autoAccept?: IAutoAcceptConfig;
 
   /**
    * Create an RFQ
@@ -21,13 +22,15 @@ export class RFQ implements IRFQ {
    * @param direction - "buy" or "sell"
    * @param amount - Quantity to trade
    * @param expiration - Unix timestamp for expiration
+   * @param autoAccept - Optional auto-accept configuration
    */
   constructor(
     id: string,
     market: string,
     direction: Direction,
     amount: number,
-    expiration: number
+    expiration: number,
+    autoAccept?: IAutoAcceptConfig
   ) {
     this.validate(id, market, direction, amount, expiration);
     
@@ -39,6 +42,7 @@ export class RFQ implements IRFQ {
     this.status = RFQStatus.OPEN;
     this.createdAt = Date.now();
     this.selectedQuoteId = null;
+    this.autoAccept = autoAccept;
   }
 
   /**
@@ -122,6 +126,32 @@ export class RFQ implements IRFQ {
   }
 
   /**
+   * Check if this RFQ should auto-accept quotes
+   * @param quoteCount - Current number of quotes received
+   * @returns true if conditions met for auto-accept
+   */
+  public shouldAutoAccept(quoteCount: number): boolean {
+    if (!this.autoAccept || !this.autoAccept.enabled) {
+      return false;
+    }
+    
+    // Check if we have minimum required quotes
+    if (quoteCount < this.autoAccept.minQuotes) {
+      return false;
+    }
+    
+    // Check if wait time has elapsed (if specified)
+    if (this.autoAccept.waitTimeMs) {
+      const elapsed = Date.now() - this.createdAt;
+      if (elapsed < this.autoAccept.waitTimeMs) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  /**
    * Get a plain object representation of the RFQ
    */
   public toJSON(): IRFQData {
@@ -133,7 +163,8 @@ export class RFQ implements IRFQ {
       expiration: this.expiration,
       status: this.status,
       createdAt: this.createdAt,
-      selectedQuoteId: this.selectedQuoteId
+      selectedQuoteId: this.selectedQuoteId,
+      autoAccept: this.autoAccept
     };
   }
 }

@@ -7,9 +7,13 @@ A simple, in-memory Request for Quote (RFQ) system built in JavaScript. This lea
 The RFQ system allows:
 - **Takers** to create RFQs requesting quotes for trades
 - **Makers** to respond with competitive price quotes
-- **Takers** to select and accept the best quote
+- **Takers** to select and accept the best quote (3-step) or auto-accept (2-step) ⭐ NEW
 - Automatic expiration of old RFQs
 - In-memory tracking of all RFQs and quotes
+
+### Two Workflow Options:
+1. **3-Step Process** (Manual) - Create RFQ → Receive Quotes → Manually Select Best
+2. **2-Step Process** (Auto-Accept) ⭐ - Create RFQ with auto-accept → Automatically filled ⚡
 
 ## 📦 Installation
 
@@ -32,7 +36,7 @@ npm run test:coverage
 
 ## 🚀 Usage
 
-### Basic Example
+### 3-Step Example (Manual Selection)
 
 ```javascript
 const { RFQManager } = require('./src/index');
@@ -40,20 +44,36 @@ const { RFQManager } = require('./src/index');
 // Create RFQ manager
 const manager = new RFQManager();
 
-// Taker creates an RFQ to buy 10 BTC (expires in 5 minutes)
+// Step 1: Taker creates an RFQ to buy 10 BTC (expires in 5 minutes)
 const rfq = manager.createRFQ('BTC/USD', 'buy', 10, 300000);
 
-// Makers submit quotes
+// Step 2: Makers submit quotes
 const quote1 = manager.submitQuote(rfq.id, 'maker_alice', 50000);
 const quote2 = manager.submitQuote(rfq.id, 'maker_bob', 49500);
 
-// Taker reviews quotes
+// Step 3: Taker reviews and manually selects best quote
 const details = manager.getRFQDetails(rfq.id);
-console.log(`Received ${details.quotes.length} quotes`);
-
-// Taker accepts best quote
 const result = manager.acceptQuote(rfq.id, quote2.id);
 console.log(`Filled at $${result.quote.pricePerToken}`);
+```
+
+### 2-Step Example (Auto-Accept) ⭐ NEW
+
+```javascript
+// Step 1: Create RFQ with auto-accept enabled
+const rfq = manager.createRFQ('BTC/USD', 'buy', 10, 300000, {
+  enabled: true,
+  minQuotes: 3  // Auto-accept when 3 quotes received
+});
+
+// Step 2: Makers submit quotes (auto-fills when condition met)
+manager.submitQuote(rfq.id, 'maker_alice', 50000);
+manager.submitQuote(rfq.id, 'maker_bob', 49500);
+manager.submitQuote(rfq.id, 'maker_charlie', 50100);
+
+// ✅ Automatically filled with best quote!
+console.log(rfq.status); // "filled"
+console.log(`Auto-filled at $${rfq.selectedQuoteId}`);
 ```
 
 ### Run the Example
@@ -96,12 +116,14 @@ High-level orchestrator that:
 
 ## 🎓 Key Features
 
+- ✅ **Two workflows** - 3-step (manual) or 2-step (auto-accept) ⭐ NEW
 - ✅ **Full validation** - Input validation at all levels
 - ✅ **Expiration handling** - Automatic RFQ expiration
 - ✅ **Multiple quotes** - Multiple makers can quote same RFQ
 - ✅ **Buy/Sell support** - Handles both directions
 - ✅ **Status tracking** - Open, filled, expired, cancelled
-- ✅ **Comprehensive tests** - 95+ tests with full coverage
+- ✅ **TypeScript** - Full type safety with strict mode
+- ✅ **Comprehensive tests** - 117 tests with 95%+ coverage
 
 ## 📖 Documentation
 
